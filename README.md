@@ -70,7 +70,7 @@ Compiling from source allows you to build a lightweight system tailored specific
 
 4. **Flash the compiled image to the MicroSD card:**
    ```bash
-   sudo dd if=output/images/image.img of=/dev/sdX bs=4M status=progress conv=fdatasync
+   sudo dd if=output/images/image.img of=/dev/sdX bs=16M status=progress conv=fdatasync
    ```
    *(Make sure to replace `/dev/sdX` with your actual MicroSD card identifier).*
 

@@ -1,13 +1,13 @@
-# Implementation and Customization of Buildroot on the LicheeRV Nano (SG2002) Embedded Platform
+# Implementation and Optimization of a YOLO Model on the LicheeRV Nano (SG2002) Embedded Platform for Object Detection with Replicable Documentation in Educational Environments
 
-Official repository of the undergraduate thesis titled: *"Implementation and customization of Buildroot on the LicheeRV Nano (SG2002) embedded platform with replicable documentation in educational environments"*, presented by **Jesús Antonio López Trigozo** to the Faculty of Engineering at the **Universidad Nacional de Colombia (Bogotá Campus)**, under the direction of professor Carlos Iván Camargo Bareño.
+Official repository of the undergraduate thesis titled: *"Implementation and optimization of a YOLO model on the LicheeRV Nano (SG2002) embedded platform for object detection with replicable documentation in educational environments"*, presented by **Jesús Antonio López Trigozo** to the Faculty of Engineering at the **Universidad Nacional de Colombia (Bogotá Campus)**, under the direction of professor Carlos Iván Camargo Bareño.
 
 > **Project Status:** 🟢 In Progress (Custom build environment and OS configuration stage).
 
 ---
 
 ## 📌 1. Introduction and Justification
-Deploying custom Linux environments on low-cost hardware often encounters a lack of clear, reproducible guides. Official pre-compiled images tend to be bloated (~1.2 GB) with unnecessary packages (such as Python and unused network drivers) that strain resource-constrained platforms like the LicheeRV Nano. This documentation provides a clean, step-by-step methodology to compile Buildroot from source using Docker, strip out unnecessary software, flash the custom image, and configure wireless connectivity from scratch.
+The deployment of artificial intelligence at the edge (Edge AI) on low-cost hardware is often hindered by the lack of clear, reproducible technical documentation. Official pre-compiled images tend to be bloated (~1.2 GB) with unnecessary software packages and unused drivers that strain resource-constrained platforms like the LicheeRV Nano. This project addresses this issue by implementing an optimized YOLO model on the LicheeRV Nano board (SoC SG2002), leveraging its native 1 TOPS INT8 NPU, CSI camera interface, and Wi-Fi connectivity. The primary objective is to provide the academic community with an open, step-by-step methodology that serves as a solid didactic and technical foundation in the Faculty of Engineering.
 
 ---
 
@@ -70,9 +70,9 @@ Compiling from source allows you to build a lightweight system tailored specific
 
 4. **Flash the compiled image to the MicroSD card:**
    ```bash
-   sudo dd if=output/images/image.img of=/dev/sdX bs=16M status=progress conv=fdatasync
+   sudo dd if=/path/to/image.img of=/dev/sdX bs=16M status=progress conv=fdatasync
    ```
-   *(Make sure to replace `/dev/sdX` with your actual MicroSD card identifier).*
+   *(Make sure to replace `/path/to/image.img` with your actual image path and `/dev/sdX` with your MicroSD card identifier).*
 
 5. **Configure Wi-Fi Credentials (W / WE Versions):**
    Mount the `rootfs` partition of the SD card and configure your wireless network by creating or editing `/etc/wpa_supplicant.conf`:
@@ -83,14 +83,4 @@ Compiling from source allows you to build a lightweight system tailored specific
        ssid="YOUR_WIFI_SSID"
        psk="YOUR_WIFI_PASSWORD"
    }
-   ```
-
-6. **Connection and Initial Login:**
-   Insert the MicroSD card into the board, power it on, and locate its IP address on your local network using `nmap`:
-   ```bash
-   sudo nmap -sV -p 22 192.168.1.0/24
-   ```
-   Connect to the board via SSH (Default root user):
-   ```bash
-   ssh root@<BOARD_IP_ADDRESS>
    ```

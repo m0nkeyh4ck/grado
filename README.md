@@ -1,49 +1,49 @@
-# Implementación y Optimización de un Modelo YOLO en la Plataforma Embebida LicheeRV Nano (SG2002)
+# Implementation and Customization of Buildroot on the LicheeRV Nano (SG2002) Embedded Platform
 
-Repositorio oficial del trabajo de grado titulado: *"Implementación y optimización de un modelo YOLO en la plataforma embebida LicheeRV Nano (SG2002) para detección de objetos con documentación replicable en entornos educativos"*, presentado por **Jesús Antonio López Trigozo** ante la Facultad de Ingeniería de la **Universidad Nacional de Colombia (Sede Bogotá)**, bajo la dirección del profesor Carlos Iván Camargo Bareño.
+Official repository of the undergraduate thesis titled: *"Implementation and customization of Buildroot on the LicheeRV Nano (SG2002) embedded platform with replicable documentation in educational environments"*, presented by **Jesús Antonio López Trigozo** to the Faculty of Engineering at the **Universidad Nacional de Colombia (Bogotá Campus)**, under the direction of professor Carlos Iván Camargo Bareño.
 
-> **Estado del Proyecto:** 🟢 En desarrollo (Avance actual estimado: **60%** - Entorno configurado, toolchain de NPU integrado y scripts base de inferencia implementados).
-
----
-
-## 📌 1. Introducción y Justificación
-El despliegue de Inteligencia Artificial en el borde (*Edge AI*) en hardware de bajo costo suele verse obstaculizado por la escasez de guías técnicas claras y reproducibles. Este proyecto aborda dicha problemática implementando un modelo YOLO optimizado sobre la placa **LicheeRV Nano (SoC SG2002)**, aprovechando su NPU nativa de 1 TOPS INT8, su interfaz de cámara CSI y conectividad Wi-Fi. El propósito central es entregar a la comunidad académica una metodología abierta, paso a paso, para facilitar el desarrollo de sistemas embebidos inteligentes.
+> **Project Status:** 🟢 In Progress (Custom build environment and OS configuration stage).
 
 ---
 
-## 🛠️ 2. Especificaciones Técnicas y Versiones
+## 📌 1. Introduction and Justification
+Deploying custom Linux environments on low-cost hardware often encounters a lack of clear, reproducible guides. Official pre-compiled images tend to be bloated (~1.2 GB) with unnecessary packages (such as Python and unused network drivers) that strain resource-constrained platforms like the LicheeRV Nano. This documentation provides a clean, step-by-step methodology to compile Buildroot from source using Docker, strip out unnecessary software, flash the custom image, and configure wireless connectivity from scratch.
 
-### Tabla de Especificaciones Generales
-| Elemento | Especificación |
+---
+
+## 🛠️ 2. Technical Specifications and Versions
+
+### General Specifications Table
+| Element | Specification |
 | :--- | :--- |
-| **CPU** | SOPHGO SG2002 <br>• Núcleo principal: 1GHz RISC-V C906 / ARM A53 (seleccionable) <br>• Núcleo secundario: 700MHz RISC-V C906 <br>• Núcleo de bajo consumo: 25–300M 8051 |
-| **Memoria** | DDR3 integrada de 2Gbit (256MByte) |
-| **Almacenamiento** | Arranque desde tarjeta TF / SD NAND (pads SD NAND bajo el slot de tarjeta TF) |
-| **Aceleración de IA** | NPU integrada de **1 TOPS INT8** (soporta BF16) |
-| **Interfaz de Video** | • Salida: MIPI DSI de 2 líneas (interfaz estándar de 31 pines, soporte táctil capacitivo de 6 pines) <br>• Entrada: MIPI CSI de 4 líneas (interfaz de 22 pines, soporte de división CSI dual) |
-| **Interfaz de Audio** | • Salida: Amplificador PA incorporado (conexión directa a altavoces <1W) <br>• Entrada: Micrófono de silicio analógico integrado |
-| **Conexión Cableada** | Versión con sufijo **E**: Conector RJ45 de 100M |
-| **Conexión Inalámbrica** | Versión con sufijo **W**: Wi-Fi 6 de doble banda 2.4G / 5.8G + BLE 5.4 |
-| **USB / GPIO / Otros** | 1 x USB 2.0 OTG Type-C \| Headers de 2 x 14 pines (2.54 mm) \| Botones RST y BOOT \| LEDs de encendido y usuario |
-| **Sistema Operativo** | Buildroot Linux / Debian |
-| **Dimensiones** | 22.86 x 35.56 mm |
+| **CPU** | SOPHGO SG2002 <br>• Major core: 1GHz RISC-V C906 / ARM A53 (selectable) <br>• Minor core: 700MHz RISC-V C906 <br>• Low-power core: 25–300M 8051 |
+| **Memory** | Integrated 2Gbit (256MByte) DDR3 |
+| **Storage** | Bootable from TF card / SD NAND (SD NAND pads located under the TF card slot) |
+| **AI Acceleration** | Integrated NPU delivering **1 TOPS INT8** (supports BF16) |
+| **Video Interface** | • Output: 2-lane MIPI DSI (31-pin standard interface, supports 6-pin capacitive touchscreen) <br>• Input: 4-lane MIPI CSI (22-pin interface, supports dual CSI split) |
+| **Audio Interface** | • Output: Onboard PA amplifier (direct speaker connection <1W) <br>• Input: Onboard analog silicon microphone |
+| **Wired Connection** | **E** suffix version includes a 100M RJ45 connector |
+| **Wireless Connection** | **W** suffix version includes dual-band 2.4G / 5.8G Wi-Fi 6 + BLE 5.4 |
+| **USB / GPIO / Others** | 1 x USB 2.0 OTG Type-C \| 2 x 14-pin 2.54 mm headers \| RST & BOOT buttons \| Power & User LEDs |
+| **Operating System** | Buildroot Linux / Debian |
+| **Dimensions** | 22.86 x 35.56 mm |
 
-### Comparativa de Variantes
-| Versión | Sistema Base | Micrófono / Altavoz | Ethernet | Wi-Fi 6 / BT5 |
+### Variant Comparison
+| Version | Base System | Mic / Speaker | Ethernet | Wi-Fi 6 / BT5 |
 | :--- | :---: | :---: | :---: | :---: |
-| **LicheeRV-Nano-B** | Sí | Sí | No | No |
-| **LicheeRV-Nano-E** | Sí | Sí | Sí | No |
-| **LicheeRV-Nano-W** | Sí | Sí | No | Sí |
-| **LicheeRV-Nano-WE** | Sí | Sí | Sí | Sí |
+| **LicheeRV-Nano-B** | Yes | Yes | No | No |
+| **LicheeRV-Nano-E** | Yes | Yes | Yes | No |
+| **LicheeRV-Nano-W** | Yes | Yes | No | Yes |
+| **LicheeRV-Nano-WE** | Yes | Yes | Yes | Yes |
 
 ---
 
-## 🚀 3. Guía de Réplica (Paso a Paso)
+## 🚀 3. Step-by-Step Replication Guide
 
-### Fase 1: Compilación Personalizada y Preparación del Sistema Operativo (Buildroot)
-La imagen oficial pesa 1.2 GB e incluye software innecesario. La compilación se realiza mediante un contenedor Docker para aislar dependencias:
+### Custom Buildroot Compilation and OS Preparation
+Compiling from source allows you to build a lightweight system tailored specifically for your needs, avoiding host dependency conflicts by using a Docker container:
 
-1. **Descarga del código fuente y creación del contenedor Docker:**
+1. **Download the source code and build the Docker container:**
    ```bash
    git clone https://github.com/sipeed/LicheeRV-Nano-Build --depth=1
    cd LicheeRV-Nano-Build
@@ -52,14 +52,14 @@ La imagen oficial pesa 1.2 GB e incluye software innecesario. La compilación se
    docker build -t licheervnano-build-ubuntu .
    ```
 
-2. **Inicio del contenedor:**
+2. **Start the Docker container:**
    ```bash
    docker run -v /path/to/LicheeRV-Nano-Build/:/workspace -it licheervnano-build-ubuntu /bin/bash
    ```
-   *(Reemplaza `/path/to/LicheeRV-Nano-Build/` con la ruta absoluta de tu equipo anfitrión).*
+   *(Note: Replace `/path/to/LicheeRV-Nano-Build/` with the absolute path on your host machine).*
 
-3. **Configuración y ensamblaje de la imagen:**
-   Dentro del contenedor, ejecuta:
+3. **Configure and assemble the image:**
+   Inside the container terminal, run:
    ```bash
    cd /workspace
    source build/cvisetup.sh
@@ -68,63 +68,29 @@ La imagen oficial pesa 1.2 GB e incluye software innecesario. La compilación se
    build_all
    ```
 
-4. **Flasheo de la imagen en la tarjeta MicroSD:**
+4. **Flash the compiled image to the MicroSD card:**
    ```bash
-   xzcat buildroot_licheervnano.img.xz | sudo dd of=/dev/sdX conv=sync status=progress
+   sudo dd if=output/images/image.img of=/dev/sdX bs=4M status=progress conv=fdatasync
    ```
-   *(Asegúrate de reemplazar `/dev/sdX` con el identificador correcto de tu tarjeta MicroSD)*.
+   *(Make sure to replace `/dev/sdX` with your actual MicroSD card identifier).*
 
-5. **Configuración del Wi-Fi (Versiones W / WE):**
-   Monta la partición `rootfs` de la tarjeta SD y configura las credenciales de red editando o creando el archivo `/etc/wpa_supplicant.conf`:
+5. **Configure Wi-Fi Credentials (W / WE Versions):**
+   Mount the `rootfs` partition of the SD card and configure your wireless network by creating or editing `/etc/wpa_supplicant.conf`:
    ```text
    ctrl_interface=/var/run/wpa_supplicant
    ap_scan=1
    network={
-       ssid="TU_RED_WIFI"
-       psk="TU_CONTRASEÑA"
+       ssid="YOUR_WIFI_SSID"
+       psk="YOUR_WIFI_PASSWORD"
    }
    ```
 
-6. **Conexión e Inicio de Sesión:**
-   Inserta la MicroSD, enciende la placa y localiza su IP en la red local mediante `nmap`:
+6. **Connection and Initial Login:**
+   Insert the MicroSD card into the board, power it on, and locate its IP address on your local network using `nmap`:
    ```bash
    sudo nmap -sV -p 22 192.168.1.0/24
    ```
-   Conéctate vía SSH (Usuario por defecto: `root`):
+   Connect to the board via SSH (Default root user):
    ```bash
-   ssh root@<IP_DE_LA_PLACA>
+   ssh root@<BOARD_IP_ADDRESS>
    ```
-
----
-
-### Fase 2: Cuantización y Compilación del Modelo YOLO para la NPU
-Para lograr inferencia en tiempo real en el chip SG2002:
-1. Exporta tu arquitectura YOLO (ej. YOLOv8n) desde PyTorch a formato **ONNX**.
-2. Emplea las herramientas de cuantización a **INT8** provistas en el SDK del fabricante para generar el archivo compatible con la NPU (`.cvimodel`).
-3. Transfiere el modelo generado a la placa LicheeRV Nano mediante SCP:
-   ```bash
-   scp modelo_int8.cvimodel root@<IP_DE_LA_PLACA>:/root/
-   ```
-
----
-
-### Fase 3: Pipeline de Visión por Computadora (En Desarrollo / 60%)
-- [x] Configuración de drivers del kernel para la cámara CSI.
-- [x] Integración inicial de las librerías del Multimedia Framework (MMF) y CVI TDL SDK.
-- [ ] Pruebas finales de estabilidad de fotogramas por segundo (FPS) bajo carga continua.
-- [ ] Automatización de scripts de ejecución al arranque del sistema.
-
----
-
-## 📊 4. Estado de Avance y Tareas Pendientes (Cronograma)
-- **Semanas 1 - 4:** Configuración de hardware, compilación de Buildroot y conectividad Wi-Fi/SSH — **(Completado 100%)**
-- **Semanas 5 - 8:** Cuantización de modelos YOLO a INT8 y pruebas de compilación cruzada con el SDK — **(Completado 100%)**
-- **Semanas 9 - 12:** Desarrollo del pipeline de cámara, integración con la NPU y pruebas de rendimiento — **(En progreso - ~50%)**
-- **Semanas 13 - 16:** Consolidación de la documentación final en GitHub y sustentación — **(Pendiente)**
-
----
-
-## 📜 5. Licencia y Créditos
-Proyecto desarrollado bajo los parámetros institucionales de la **Universidad Nacional de Colombia**. 
-- **Autor:** Jesús Antonio López Trigozo
-- **Director:** Carlos Iván Camargo Bareño

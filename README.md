@@ -1,13 +1,13 @@
-# Implementation and Optimization of a YOLO Model on the LicheeRV Nano (SG2002) Embedded Platform for Object Detection with Replicable Documentation in Educational Environments
+# Implementation and Customization of Buildroot on the LicheeRV Nano (SG2002)
 
-Official repository of the undergraduate thesis titled: *"Implementation and optimization of a YOLO model on the LicheeRV Nano (SG2002) embedded platform for object detection with replicable documentation in educational environments"*, presented by **Jesús Antonio López Trigozo** to the Faculty of Engineering at the **Universidad Nacional de Colombia (Bogotá Campus)**, under the direction of professor Carlos Iván Camargo Bareño.
+Official repository for the undergraduate thesis: *"Implementation and optimization of a YOLO model on the LicheeRV Nano (SG2002) embedded platform for object detection with replicable documentation in educational environments"*, presented by **Jesús Antonio López Trigozo** to the Faculty of Engineering at the **Universidad Nacional de Colombia (Bogotá Campus)**, under the direction of professor Carlos Iván Camargo Bareño.
 
 > **Project Status:** 🟢 In Progress (Custom build environment and OS configuration stage).
 
 ---
 
 ## 📌 1. Introduction and Justification
-The deployment of artificial intelligence at the edge (Edge AI) on low-cost hardware is often hindered by the lack of clear, reproducible technical documentation. Official pre-compiled images tend to be bloated (~1.2 GB) with unnecessary software packages and unused drivers that strain resource-constrained platforms like the LicheeRV Nano. This project addresses this issue by implementing an optimized YOLO model on the LicheeRV Nano board (SoC SG2002), leveraging its native 1 TOPS INT8 NPU, CSI camera interface, and Wi-Fi connectivity. The primary objective is to provide the academic community with an open, step-by-step methodology that serves as a solid didactic and technical foundation in the Faculty of Engineering.
+Deploying custom Linux environments on resource-constrained hardware like the LicheeRV Nano (SoC SG2002) often encounters a lack of clear, reproducible technical guides. Official pre-compiled images tend to be bloated (~1.2 GB) with unnecessary packages and unused network drivers. This repository provides a clean, step-by-step methodology to compile Buildroot from source using Docker, strip out unnecessary software, flash the optimized image, and configure wireless connectivity from scratch as part of an open academic framework for Edge AI.
 
 ---
 
@@ -84,3 +84,12 @@ Compiling from source allows you to build a lightweight system tailored specific
        psk="YOUR_WIFI_PASSWORD"
    }
    ```
+
+6. **Connection and Initial Login:**
+   Insert the MicroSD card into the board, power it on, and locate its IP address on your local network using `nmap`:
+   ```bash
+   sudo nmap -sV -p 22 192.168.1.0/24
+   ```
+   Connect to the board via SSH (Default root user):
+   ```bash
+   ssh root@<BOARD_IP_ADDRESS>

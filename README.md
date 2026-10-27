@@ -93,7 +93,52 @@ Compiling from source allows you to build a lightweight system tailored specific
 
    The CVI TDL repository must be located inside `LicheeRV-Nano-Build/`. Its absolute location on your computer does not matter, provided the repository is cloned into that directory.
 
-5. **Flash the compiled image to the MicroSD card:**
+5. **Install CivetWeb for the HTTP streaming application:**
+
+   CivetWeb is used as the embedded HTTP server dependency for the `http_streamer_tdl.c` application. Clone version `v1.15` inside the `LicheeRV-Nano-Build/` directory so the source files remain organized alongside the SDK.
+
+   ```bash
+   cd /path/to/LicheeRV-Nano-Build
+   git clone --branch v1.15 --depth=1 https://github.com/civetweb/civetweb.git
+   ```
+
+   The expected directory structure is:
+
+   ```text
+   LicheeRV-Nano-Build/
+   ├── build/
+   ├── buildroot/
+   ├── cvitek-tdl-sdk-sg200x/
+   └── civetweb/
+       ├── include/
+       │   └── civetweb.h
+       └── src/
+           └── civetweb.c
+   ```
+
+   The `civetweb` directory contains the source code and header required by the HTTP streaming application. In the development environment described here, the repository is cloned at:
+
+   ```text
+   LicheeRV-Nano-Build/civetweb
+   ```
+
+   The application's `MakeFile` must reference the actual CivetWeb location:
+
+   ```makefile
+   CIVETWEB_DIR := /path/to/LicheeRV-Nano-Build/civetweb
+   CIVETWEB_SOURCE := $(CIVETWEB_DIR)/src/civetweb.c
+   CIVETWEB_INCLUDE_DIR := $(CIVETWEB_DIR)/include
+   ```
+
+   Replace `/path/to/LicheeRV-Nano-Build` with the absolute path to your local SDK directory. For this project, the directory is:
+
+   ```text
+   /home/chucho/Documents/clases/embebidos/TRABAJODEGRADO/LicheeRV-Nano-Build
+   ```
+
+   **Note:** Cloning CivetWeb provides its source code; it does not, by itself, compile or deploy the HTTP streaming application to the board. The application must still be built with the appropriate RISC-V cross-compiler and SDK libraries.
+
+6. **Flash the compiled image to the MicroSD card:**
 
    ```bash
    sudo dd if=/path/to/image.img of=/dev/sdX bs=16M status=progress conv=fdatasync
@@ -101,7 +146,7 @@ Compiling from source allows you to build a lightweight system tailored specific
 
    *(Make sure to replace `/path/to/image.img` with your actual image path and `/dev/sdX` with your MicroSD card identifier).*
 
-6. **Configure Wi-Fi Credentials (W / WE Versions):** Mount the `rootfs` partition of the SD card and configure your wireless network by creating or editing `/etc/wpa_supplicant.conf`:
+7. **Configure Wi-Fi Credentials (W / WE Versions):** Mount the `rootfs` partition of the SD card and configure your wireless network by creating or editing `/etc/wpa_supplicant.conf`:
 
    ```text
    ctrl_interface=/var/run/wpa_supplicant
@@ -112,7 +157,7 @@ Compiling from source allows you to build a lightweight system tailored specific
    }
    ```
 
-7. **Connection and Initial Login:** Insert the MicroSD card into the board, power it on, and locate its IP address on your local network using `nmap`:
+8. **Connection and Initial Login:** Insert the MicroSD card into the board, power it on, and locate its IP address on your local network using `nmap`:
 
    ```bash
    sudo nmap -sV -p 22 192.168.1.0/24
@@ -123,4 +168,3 @@ Compiling from source allows you to build a lightweight system tailored specific
    ```bash
    ssh root@<BOARD_IP_ADDRESS>
    ```
-

@@ -1,170 +1,243 @@
-# Implementation and Customization of Buildroot on the LicheeRV Nano (SG2002)
+# LicheeRV Nano (SG2002) — Buildroot & Edge AI
 
-Official repository for the undergraduate thesis: *"Implementation and optimization of a YOLO model on the LicheeRV Nano (SG2002) embedded platform for object detection with replicable documentation in educational environments"*, presented by **Jesús Antonio López Trigozo** to the Faculty of Engineering at the **Universidad Nacional de Colombia (Bogotá Campus)**, under the direction of professor Carlos Iván Camargo Bareño.
+**Undergraduate Thesis | Universidad Nacional de Colombia — Bogotá Campus**
 
-> **Project Status:** 🟢 In Progress (Custom build environment and OS configuration stage).
+*Implementation and Optimization of a YOLO Model on the LicheeRV Nano (SG2002) Embedded Platform for Object Detection with Replicable Documentation in Educational Environments.*
 
----
-
-## 📌 1. Introduction and Justification
-
-Deploying custom Linux environments on resource-constrained hardware like the LicheeRV Nano (SoC SG2002) often encounters a lack of clear, reproducible technical guides. Official pre-compiled images tend to be bloated (~1.2 GB) with unnecessary packages and unused network drivers. This repository provides a clean, step-by-step methodology to compile Buildroot from source using Docker, strip out unnecessary software, flash the optimized image, and configure wireless connectivity from scratch as part of an open academic framework for Edge AI.
-
----
-
-## 🛠️ 2. Technical Specifications and Versions
-
-### General Specifications Table
-
-| **Element** | **Specification** |
+| Academic Information | Details |
 |---|---|
-| **CPU** | SOPHGO SG2002<br>• Major core: 1GHz RISC-V C906 / ARM A53 (selectable)<br>• Minor core: 700MHz RISC-V C906<br>• Low-power core: 25–300M 8051 |
-| **Memory** | Integrated 2Gbit (256MByte) DDR3 |
-| **Storage** | Bootable from TF card / SD NAND (SD NAND pads located under the TF card slot) |
-| **AI Acceleration** | Integrated NPU delivering **1 TOPS INT8** (supports BF16) |
-| **Video Interface** | • Output: 2-lane MIPI DSI (31-pin standard interface, supports 6-pin capacitive touchscreen)<br>• Input: 4-lane MIPI CSI (22-pin interface, supports dual CSI split) |
-| **Audio Interface** | • Output: Onboard PA amplifier (direct speaker connection <1W)<br>• Input: Onboard analog silicon microphone |
-| **Wired Connection** | **E** suffix version includes a 100M RJ45 connector |
-| **Wireless Connection** | **W** suffix version includes dual-band 2.4G / 5.8G Wi-Fi 6 + BLE 5.4 |
-| **USB / GPIO / Others** | 1 x USB 2.0 OTG Type-C \| 2 x 14-pin 2.54 mm headers \| RST & BOOT buttons \| Power & User LEDs |
-| **Operating System** | Buildroot Linux / Debian |
-| **Dimensions** | 22.86 x 35.56 mm |
-
-### Variant Comparison
-
-| **Version** | **Base System** | **Mic / Speaker** | **Ethernet** | **Wi-Fi 6 / BT5** |
-|---|---|---|---|---|
-| **LicheeRV-Nano-B** | Yes | Yes | No | No |
-| **LicheeRV-Nano-E** | Yes | Yes | Yes | No |
-| **LicheeRV-Nano-W** | Yes | Yes | No | Yes |
-| **LicheeRV-Nano-WE** | Yes | Yes | Yes | Yes |
+| **Author** | Jesús Antonio López Trigozo |
+| **Institution** | Universidad Nacional de Colombia |
+| **Campus** | Bogotá |
+| **Faculty** | Faculty of Engineering |
+| **Advisor** | Carlos Iván Camargo Bareño |
+| **Status** | 🟡 In Progress |
 
 ---
 
-## 🚀 3. Step-by-Step Replication Guide
+## 01. Project Overview
 
-### Custom Buildroot Compilation and OS Preparation
+This project focuses on preparing a customized embedded Linux environment for **YOLO-based object detection** on the LicheeRV Nano, powered by the SG2002 SoC.
 
-Compiling from source allows you to build a lightweight system tailored specifically for your needs, avoiding host dependency conflicts by using a Docker container:
+The current work covers system configuration, image compilation, development tools, network connectivity, and the software environment required for AI deployment on resource-constrained hardware.
 
-1. **Download the source code and build the Docker container:**
+**Project objectives**
 
-   ```bash
-   git clone https://github.com/sipeed/LicheeRV-Nano-Build --depth=1
-   cd LicheeRV-Nano-Build
-   git clone https://github.com/sophgo/host-tools --depth=1
-   cd host/ubuntu
-   docker build -t licheervnano-build-ubuntu .
-   ```
+- Customize and compile a Buildroot-based Linux image.
+- Reduce unnecessary software and system overhead.
+- Configure network connectivity and remote access.
+- Prepare the CVI TDL SDK for application development.
+- Integrate CivetWeb for HTTP streaming.
+- Document the workflow for reproducibility in educational environments.
 
-2. **Start the Docker container:**
+## 02. Hardware Platform
 
-   ```bash
-   docker run -v /path/to/LicheeRV-Nano-Build/:/workspace -it licheervnano-build-ubuntu /bin/bash
-   ```
+### LicheeRV Nano — SG2002
 
-   *(Note: Replace `/path/to/LicheeRV-Nano-Build/` with the absolute path on your host machine).*
+| Component | Specification |
+|---|---|
+| **SoC** | SOPHGO SG2002 |
+| **Main core** | 1 GHz RISC-V C906 / ARM Cortex-A53 (selectable) |
+| **Secondary core** | 700 MHz RISC-V C906 |
+| **Low-power core** | 8051, 25–300 MHz |
+| **Memory** | 2 Gbit (256 MB) DDR3 |
+| **AI accelerator** | Integrated NPU — 1 TOPS INT8, BF16 support |
+| **Storage** | TF card / SD NAND |
+| **Video output** | 2-lane MIPI DSI, 31-pin interface |
+| **Camera input** | 4-lane MIPI CSI, 22-pin interface |
+| **Audio** | Onboard amplifier and analog microphone |
+| **Wired network** | 100 Mbps Ethernet on E and WE variants |
+| **Wireless network** | Dual-band Wi-Fi 6 and Bluetooth 5.4 on W and WE variants |
+| **USB** | 1 × USB 2.0 OTG Type-C |
+| **Expansion** | 2 × 14-pin, 2.54 mm headers |
+| **Other interfaces** | RST and BOOT buttons, power and user LEDs |
+| **Operating system** | Buildroot Linux / Debian |
+| **Dimensions** | 22.86 × 35.56 mm |
 
-3. **Configure and assemble the image:** Inside the container terminal, run:
+### Board Variants
 
-   ```bash
-   cd /workspace
-   source build/cvisetup.sh
-   defconfig sg2002_licheervnano_sd
-   git config --global --add safe.directory /workspace
-   build_all
-   ```
+| Variant | Ethernet | Wi-Fi 6 | Bluetooth |
+|---|---|---|---|
+| **LicheeRV-Nano-B** | No | No | No |
+| **LicheeRV-Nano-E** | Yes | No | No |
+| **LicheeRV-Nano-W** | No | Yes | Yes |
+| **LicheeRV-Nano-WE** | Yes | Yes | Yes |
 
-4. **Clone the CVI TDL repository and compile the samples:**
+---
 
-   From the `LicheeRV-Nano-Build` directory, clone the repository:
+## 03. Development Environment
 
-   ```bash
-   git clone https://github.com/milkv-duo/cvitek-tdl-sdk-sg200x.git --depth=1
-   ```
+The build environment uses Docker to isolate dependencies and provide a consistent workspace for compiling the system.
 
-   Enter the sample directory and add the cross-compiler to `PATH`:
+### 3.1. Clone the Build Environment
 
-   ```bash
-   export PATH="$PWD/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
-   cd cvitek-tdl-sdk-sg200x/sample
-   ./compile_sample.sh
-   ```
+Run these commands on the **host machine** to download the source code and build the Docker image:
 
-   The CVI TDL repository must be located inside `LicheeRV-Nano-Build/`. Its absolute location on your computer does not matter, provided the repository is cloned into that directory.
+```bash
+git clone https://github.com/sipeed/LicheeRV-Nano-Build --depth=1
+cd LicheeRV-Nano-Build
+git clone https://github.com/sophgo/host-tools --depth=1
+cd host/ubuntu
+docker build -t licheervnano-build-ubuntu .
+```
 
-5. **Install CivetWeb for the HTTP streaming application:**
+### 3.2. Start the Docker Container
 
-   CivetWeb is used as the embedded HTTP server dependency for the `http_streamer_tdl.c` application. Clone version `v1.15` inside the `LicheeRV-Nano-Build/` directory so the source files remain organized alongside the SDK.
+Run this command on the host machine, replacing the source path with the absolute path of your local repository:
 
-   ```bash
-   cd /path/to/LicheeRV-Nano-Build
-   git clone --branch v1.15 --depth=1 https://github.com/civetweb/civetweb.git
-   ```
+```bash
+docker run -v /path/to/LicheeRV-Nano-Build/:/workspace -it licheervnano-build-ubuntu /bin/bash
+```
 
-   The expected directory structure is:
+Once inside the container, use `/workspace` as the working directory for the following steps.
 
-   ```text
-   LicheeRV-Nano-Build/
-   ├── build/
-   ├── buildroot/
-   ├── cvitek-tdl-sdk-sg200x/
-   └── civetweb/
-       ├── include/
-       │   └── civetweb.h
-       └── src/
-           └── civetweb.c
-   ```
+### 3.3. Configure and Compile Buildroot
 
-   The `civetweb` directory contains the source code and header required by the HTTP streaming application. In the development environment described here, the repository is cloned at:
+Execute the following commands **inside the container**:
 
-   ```text
-   LicheeRV-Nano-Build/civetweb
-   ```
+```bash
+cd /workspace
+source build/cvisetup.sh
+defconfig sg2002_licheervnano_sd
+git config --global --add safe.directory /workspace
+build_all
+```
 
-   The application's `MakeFile` must reference the actual CivetWeb location:
+---
 
-   ```makefile
-   CIVETWEB_DIR := /path/to/LicheeRV-Nano-Build/civetweb
-   CIVETWEB_SOURCE := $(CIVETWEB_DIR)/src/civetweb.c
-   CIVETWEB_INCLUDE_DIR := $(CIVETWEB_DIR)/include
-   ```
+## 04. CVI TDL SDK
 
-   Replace `/path/to/LicheeRV-Nano-Build` with the absolute path to your local SDK directory. For this project, the directory is:
+The CVI TDL SDK provides sample applications and software components used during preparation of the AI deployment environment.
 
-   ```text
-   /home/chucho/Documents/clases/embebidos/TRABAJODEGRADO/LicheeRV-Nano-Build
-   ```
+### 4.1. Clone the Repository
 
-   **Note:** Cloning CivetWeb provides its source code; it does not, by itself, compile or deploy the HTTP streaming application to the board. The application must still be built with the appropriate RISC-V cross-compiler and SDK libraries.
+From the container's `/workspace` directory:
 
-6. **Flash the compiled image to the MicroSD card:**
+```bash
+cd /workspace
+git clone https://github.com/milkv-duo/cvitek-tdl-sdk-sg200x.git --depth=1
+```
 
-   ```bash
-   sudo dd if=/path/to/image.img of=/dev/sdX bs=16M status=progress conv=fdatasync
-   ```
+### 4.2. Compile the Samples
 
-   *(Make sure to replace `/path/to/image.img` with your actual image path and `/dev/sdX` with your MicroSD card identifier).*
+Add the cross-compiler to `PATH` and compile the samples:
 
-7. **Configure Wi-Fi Credentials (W / WE Versions):** Mount the `rootfs` partition of the SD card and configure your wireless network by creating or editing `/etc/wpa_supplicant.conf`:
+```bash
+export PATH="$PWD/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
+cd cvitek-tdl-sdk-sg200x/sample
+./compile_sample.sh
+```
 
-   ```text
-   ctrl_interface=/var/run/wpa_supplicant
-   ap_scan=1
-   network={
-       ssid="YOUR_WIFI_SSID"
-       psk="YOUR_WIFI_PASSWORD"
-   }
-   ```
+**Directory requirement:** The CVI TDL repository must be located at `/workspace/cvitek-tdl-sdk-sg200x` inside the container.
 
-8. **Connection and Initial Login:** Insert the MicroSD card into the board, power it on, and locate its IP address on your local network using `nmap`:
+---
 
-   ```bash
-   sudo nmap -sV -p 22 192.168.1.0/24
-   ```
+## 05. CivetWeb — HTTP Streaming
 
-   Connect to the board via SSH (Default root user):
+CivetWeb provides the embedded HTTP server dependency for the `http_streamer_tdl.c` application.
 
-   ```bash
-   ssh root@<BOARD_IP_ADDRESS>
-   ```
+### 5.1. Clone CivetWeb
+
+Clone version `v1.15` inside `/workspace`:
+
+```bash
+cd /workspace
+git clone --branch v1.15 --depth=1 https://github.com/civetweb/civetweb.git
+```
+
+### 5.2. Directory Structure
+
+The relevant project directories inside the container are organized as follows:
+
+```text
+/workspace/
+├── build/
+├── buildroot/
+├── cvitek-tdl-sdk-sg200x/
+└── civetweb/
+    ├── include/
+    │   └── civetweb.h
+    └── src/
+        └── civetweb.c
+```
+
+### 5.3. Configure the Application MakeFile
+
+The application's `MakeFile` must reference CivetWeb using its path inside the container:
+
+```makefile
+CIVETWEB_DIR := /workspace/civetweb
+CIVETWEB_SOURCE := $(CIVETWEB_DIR)/src/civetweb.c
+CIVETWEB_INCLUDE_DIR := $(CIVETWEB_DIR)/include
+```
+
+**Note:** Cloning CivetWeb provides its source code; it does not, by itself, compile or deploy the HTTP streaming application to the board. The application must still be built with the appropriate RISC-V cross-compiler and SDK libraries.
+
+---
+
+## 06. System Image Deployment
+
+### 6.1. Flash the Image to the MicroSD Card
+
+Write the compiled image to the MicroSD card:
+
+```bash
+sudo dd if=/path/to/image.img of=/dev/sdX bs=16M status=progress conv=fdatasync
+```
+
+Replace `/path/to/image.img` with the actual image path and `/dev/sdX` with the MicroSD card identifier.
+
+> **Important:** The image path and the MicroSD device path depend on where the flashing command is executed. Verify the target device before running `dd`, as selecting the wrong device can overwrite data on another disk.
+
+### 6.2. Configure Wi-Fi
+
+For the **W and WE variants**, mount the `rootfs` partition of the SD card and create or edit `/etc/wpa_supplicant.conf`:
+
+```text
+ctrl_interface=/var/run/wpa_supplicant
+ap_scan=1
+network={
+    ssid="YOUR_WIFI_SSID"
+    psk="YOUR_WIFI_PASSWORD"
+}
+```
+
+Replace the placeholder values with the credentials of your wireless network.
+
+### 6.3. Identify the Board on the Network
+
+After inserting the MicroSD card and powering on the board, identify its IP address on the local network using `nmap`:
+
+```bash
+sudo nmap -sV -p 22 192.168.1.0/24
+```
+
+### 6.4. Connect Through SSH
+
+Connect to the board using the default root account:
+
+```bash
+ssh root@<BOARD_IP_ADDRESS>
+```
+
+---
+
+## 07. Current Development Scope
+
+The repository documents the setup and configuration of the embedded Linux environment and the supporting software required for development on the SG2002 platform.
+
+The current workflow covers:
+
+- Buildroot configuration and system image compilation.
+- Docker-based development environment.
+- CVI TDL SDK setup and sample compilation.
+- CivetWeb integration for HTTP streaming.
+- MicroSD image deployment.
+- Wireless networking and SSH access.
+
+YOLO deployment, inference validation, and performance evaluation remain part of the ongoing thesis work.
+
+---
+
+**Universidad Nacional de Colombia · Bogotá Campus**  
+*Undergraduate Thesis — Embedded Systems and Edge AI*

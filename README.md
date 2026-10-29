@@ -268,21 +268,7 @@ Instead of processing frames in software via CPU routines:
 - **NPU Acceleration (`TPU / CVI_TDL`)** handles INT8 YOLOv8 tensor operations on dedicated silicon, leaving the RISC-V host CPU idling.
 - **Hardware Encoder (`VENC`)** compresses raw NV21 frames directly into H.264 streams in real-time.
 
-```text
-[ Camera (MIPI CSI) ]
-         │ (DMA)
-         ▼
-    [ VI Subsystem ]
-         │ (Hardware Bind)
-         ▼
-    [ VPSS Group ] ───► Channel 1 (640x480)  ──► [ TPU / NPU ] (YOLOv8 INT8)
-         │                                            │ (BBoxes & COCO Labels)
-         ▼                                            ▼
-    Channel 0 (1080p) ────────────────────────► [ VENC Engine ] (H.264 Encoder)
-                                                      │ (Ring Buffer)
-                                                      ▼
-                                            [ CivetWeb HTTP Stream ]
-```
+![Diagrama de Flujo del Sistema](images/Flowchart1.jpeg)
 
 #### 2. Zero Per-Frame Heap Allocation (Persistent Dynamic Buffering)
 Executing `malloc()` and `free()` inside 30 FPS high-frequency loops causes kernel heap fragmentation, system calls overhead, thermal throttling, and CPU spikes.

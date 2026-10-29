@@ -239,5 +239,118 @@ YOLO deployment, inference validation, and performance evaluation remain part of
 
 ---
 
+## 08. Software Architecture & Thermal/Performance Optimization
+
+The streaming application (`http_streamer_tdl`) is engineered specifically for resource-constrained SoC environments (SOPHGO SG2002 / CV181X). High performance, stable FPS, low CPU utilization, and minimal thermal dissipation are achieved through strict C-level design pattern optimizations.
+
+### 8.1. Source File Responsibilities
+
+| Module (`.c` / `.h`) | Primary Responsibility | Optimization Focus |
+|---|---|---|
+| `http_streamer_tdl` | Main entry point, signal handling, SDK hardware binding, thread lifecycle. | Clean subsystem tear-down and memory release. |
+| `sensor_config` | Sensor initialization (`sensor_cfg.ini` parsing) and format negotiation. | Dynamic resolution setup matching hardware capability. |
+| `vb_pool` | Allocation of hardware Video Buffer (VB) pools in DDR memory. | Zero-copy ISP/VPSS hardware buffer reuse across channels. |
+| `vi_init` | Video Input (VI) pipeline setup for MIPI CSI capture. | Direct hardware DMA streaming from sensor to DDR. |
+| `vpss_init` | Video Processing SubSystem configuration (scaling, pixel format conversion). | Dual-channel hardware scaling (1080p for stream, 640x480 for NPU). |
+| `venc_handler` | H.264 encoding thread (`VENC`), NPU inference thread (`TDL`), and ring buffer. | Reusable memory ring buffer and NPU label overlay. |
+| `fmp4_init_segment` | ISO/IEC 14496-12 MP4 container box builder (`ftyp`, `moov`, `moof`, `mdat`). | In-memory fast NAL unit Annex-B to AVCC conversion. |
+| `mse_stream` | Media Source Extensions (MSE) HTTP chunked video streaming server handler. | Passive thread synchronization and static copy buffering. |
+| `web_handler` | CivetWeb HTTP routes (`/`, `/stream`, `/stats`), HTML/JS web player interface. | Network socket I/O decoupled from mutex lock scopes. |
+
+---
+
+### 8.2. Core Optimization Strategies for Low CPU Usage & Heat Reduction
+
+#### 1. Hardware Pipeline Offloading (Zero-CPU Video/AI Pipeline)
+Instead of processing frames in software via CPU routines:
+- **MIPI CSI Camera Capture (`VI`)** streams frames via DMA directly into hardware memory pools (`VB Pool`).
+- **Video Process SubSystem (`VPSS`)** splits the capture into two hardware streams: Channel 0 scales frames to 1080p for encoding, while Channel 1 scales frames to 640x480 for NPU inference.
+- **NPU Acceleration (`TPU / CVI_TDL`)** handles INT8 YOLOv8 tensor operations on dedicated silicon, leaving the RISC-V host CPU idling.
+- **Hardware Encoder (`VENC`)** compresses raw NV21 frames directly into H.264 streams in real-time.
+
+```text
+[ Camera (MIPI CSI) ]
+         │ (DMA)
+         ▼
+    [ VI Subsystem ]
+         │ (Hardware Bind)
+         ▼
+    [ VPSS Group ] ───► Channel 1 (640x480)  ──► [ TPU / NPU ] (YOLOv8 INT8)
+         │                                            │ (BBoxes & COCO Labels)
+         ▼                                            ▼
+    Channel 0 (1080p) ────────────────────────► [ VENC Engine ] (H.264 Encoder)
+                                                      │ (Ring Buffer)
+                                                      ▼
+                                            [ CivetWeb HTTP Stream ]
+```
+
+#### 2. Zero Per-Frame Heap Allocation (Persistent Dynamic Buffering)
+Executing `malloc()` and `free()` inside 30 FPS high-frequency loops causes kernel heap fragmentation, system calls overhead, thermal throttling, and CPU spikes.
+
+To eliminate this, `venc_handler.c` and `mse_stream.c` utilize **persistent capacity-expanding buffers**. Buffers expand only when encountering larger frame sizes and reuse memory indefinitely:
+
+```c
+// Example from venc_handler.c: Ring buffer memory reuse
+pthread_mutex_lock(&g_frame_lock);
+
+int idx = g_frame_write_idx;
+if (g_frame_ring[idx].capacity < total_size) {
+    // Reallocate only when required by larger keyframe spikes
+    uint8_t *new_ptr = realloc(g_frame_ring[idx].data, total_size + 16384);
+    if (new_ptr) {
+        g_frame_ring[idx].data = new_ptr;
+        g_frame_ring[idx].capacity = total_size + 16384;
+    }
+}
+
+// Memory is reused directly without freeing between frames
+memcpy(g_frame_ring[idx].data, stStream.pstPack[i].pu8Addr, total_size);
+g_frame_ring[idx].size = total_size;
+```
+
+#### 3. Passive Thread Synchronization (`pthread_cond_t` vs Polling)
+Polling loops with `usleep()` consume CPU cycles during sleep-wake transitions and introduce jitter.
+
+The streaming handlers (`mse_stream.c` and `web_handler.c`) utilize POSIX condition variables (`pthread_cond_timedwait`). When no new frame is ready, HTTP worker threads sleep passively with **0% CPU usage**, waking up instantly via `pthread_cond_broadcast()` when the `VENC` thread writes a new frame:
+
+```c
+// Example from mse_stream.c: Passive condition wait loop
+pthread_mutex_lock(&g_frame_lock);
+while (!g_bExit && (!g_frame_ring[next].data || next == g_frame_write_idx)) {
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    ts.tv_nsec += 50000000; // 50ms timeout guard
+    if (ts.tv_nsec >= 1000000000) { ts.tv_sec += 1; ts.tv_nsec -= 1000000000; }
+    
+    // CPU thread yields completely until woken by the VENC encoder thread
+    pthread_cond_timedwait(&g_frame_cond, &g_frame_lock, &ts);
+    next = (last_sent_idx + 1) % BUFFER_SIZE;
+}
+```
+
+#### 4. Mutex Decoupling from Network Socket I/O
+Performing slow blocking socket writes (`mg_write`) inside critical section locks causes thread starvation and blocks video capture pipelines.
+
+In `web_handler.c`, frame data is copied locally inside a fast mutex lock, and the lock is **released immediately prior to network transmission**:
+
+```c
+// Example from web_handler.c: Fast copy and lock release before I/O
+pthread_mutex_lock(&g_frame_lock);
+// ... wait for frame ...
+memcpy(local_buf, g_frame_ring[next].data, size);
+last_idx = next;
+
+// Mutex lock is UNLOCKED before blocking TCP socket operations
+pthread_mutex_unlock(&g_frame_lock);
+
+// Network latency cannot block hardware VENC encoding thread
+int written = mg_write(conn, local_buf, size);
+```
+
+#### 5. Efficient NPU Overlay & Label Mapping
+In `venc_handler.c`, the NPU inference thread (`run_tdl_thread`) processes detection outputs and maps integer COCO class IDs (`stObjMeta.info[i].classes`) directly to an array of static class strings (`COCO_CLASSES[cls]`) along with confidence percentage scores (`stObjMeta.info[i].bbox.score`). Hardware vector drawing routines (`CVI_TDL_Service_ObjectDrawRect`) overlay bounding boxes and English labels on video frames prior to H.264 compression, requiring zero client-side browser rendering computation.
+
+---
+
 **Universidad Nacional de Colombia · Bogotá Campus**  
 *Undergraduate Thesis — Embedded Systems and Edge AI*

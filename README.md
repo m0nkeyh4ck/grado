@@ -179,7 +179,7 @@ docker build -t licheervnano-build-ubuntu .
 Run this command on the host machine, replacing the source path with the absolute path of your local repository:
 
 ```bash
-docker run -v /path/to/LicheeRV-Nano-Build/:/workspace -it licheervnano-build-ubuntu /bin/bash
+docker run -v /root/LicheeRV-Nano-Build/:/workspace -it licheervnano-build-ubuntu /bin/bash
 ```
 
 Once inside the container, `/workspace` serves as the root working directory representing the `LicheeRV-Nano-Build` tree.

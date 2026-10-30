@@ -15,6 +15,37 @@
 
 ---
 
+## Table of Contents
+
+- [01. Project Overview](#01-project-overview)
+- [02. Hardware Platform](#02-hardware-platform)
+  - [LicheeRV Nano — SG2002](#licheerv-nano--sg2002)
+  - [Board Variants](#board-variants)
+  - [Hardware Diagrams & Visual References](#hardware-diagrams--visual-references)
+- [03. Development Environment](#03-development-environment)
+  - [3.1. Clone the Development Environment](#31-clone-the-build-environment)
+  - [3.2. Start the Docker Container](#32-start-the-docker-container)
+  - [3.3. Configure and Compile Buildroot](#33-configure-and-compile-buildroot)
+- [04. CVI TDL SDK](#04-cvi-tdl-sdk)
+  - [4.1. Clone the Repository](#41-clone-the-repository)
+  - [4.2. Compile the Samples](#42-compile-the-samples)
+- [05. CivetWeb — HTTP Streaming](#05-civetweb--http-streaming)
+  - [5.1. Clone CivetWeb](#51-clone-civetweb)
+  - [5.2. Directory Structure](#52-directory-structure)
+  - [5.3. Configure the Application MakeFile](#53-configure-the-application-makefile)
+- [06. System Image Deployment](#06-system-image-deployment)
+  - [6.1. Flash the Image to the MicroSD Card](#61-flash-the-image-to-the-microsd-card)
+  - [6.2. Configure Wi-Fi](#62-configure-wi-fi)
+  - [6.3. Identify the Board on the Network](#63-identify-the-board-on-the-network)
+  - [6.4. Connect Through SSH](#64-connect-through-ssh)
+- [07. Current Development Scope](#07-current-development-scope)
+- [08. Software Architecture & Thermal/Performance Optimization](#08-software-architecture--thermalperformance-optimization)
+  - [8.1. Source File Responsibilities](#81-source-file-responsibilities)
+  - [8.2. Core Optimization Strategies for Low CPU Usage & Heat Reduction](#82-core-optimization-strategies-for-low-cpu-usage--heat-reduction)
+- [09. References](#09-references)
+
+---
+
 ## 01. Project Overview
 
 This project focuses on preparing a customized embedded Linux environment for **YOLO-based object detection** on the LicheeRV Nano, powered by the SG2002 SoC.
@@ -29,6 +60,8 @@ The current work covers system configuration, image compilation, development too
 - Prepare the CVI TDL SDK for application development.
 - Integrate CivetWeb for HTTP streaming.
 - Document the workflow for reproducibility in educational environments.
+
+---
 
 ## 02. Hardware Platform
 
@@ -62,6 +95,18 @@ The current work covers system configuration, image compilation, development too
 | **LicheeRV-Nano-E** | Yes | No | No |
 | **LicheeRV-Nano-W** | No | Yes | Yes |
 | **LicheeRV-Nano-WE** | Yes | Yes | Yes |
+
+### Hardware Diagrams & Visual References
+
+| Board Setup & Camera | Pinout Diagram |
+| :---: | :---: |
+| ![LicheeRV Nano Setup](images/licheerv_nano_hardware.jpg) | ![Pinout Diagram](images/licheerv_nano_pinout.jpg) |
+
+| Board Variants & Physical Layout | SG2002 Peripherals Diagram |
+| :---: | :---: |
+| ![Board Layout](images/licheerv_nano_board_layout.png) | ![SG2002 Block Diagram](images/sg2002_block_diagram.jpg) |
+
+![SG2002 System Architecture](images/sg2002_architecture.jpg)
 
 ---
 
@@ -335,6 +380,16 @@ int written = mg_write(conn, local_buf, size);
 
 #### 5. Efficient NPU Overlay & Label Mapping
 In `venc_handler.c`, the NPU inference thread (`run_tdl_thread`) processes detection outputs and maps integer COCO class IDs (`stObjMeta.info[i].classes`) directly to an array of static class strings (`COCO_CLASSES[cls]`) along with confidence percentage scores (`stObjMeta.info[i].bbox.score`). Hardware vector drawing routines (`CVI_TDL_Service_ObjectDrawRect`) overlay bounding boxes and English labels on video frames prior to H.264 compression, requiring zero client-side browser rendering computation.
+
+---
+
+## 09. References
+
+1. **Sipeed LicheeRV Nano Official Documentation:**  
+   [Sipeed LicheeRV Nano Wiki - Overview](https://wiki.sipeed.com/hardware/en/lichee/RV_Nano/1_intro.html)
+
+2. **Habr Technical Article — LicheeRV Nano Testing & Development Workflow:**  
+   [LicheeRV Nano Development, Integration, and Hardware Tests](https://habr.com/ru/articles/880230/)
 
 ---
 

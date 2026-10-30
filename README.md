@@ -29,10 +29,11 @@
 - [04. CVI TDL SDK](#04-cvi-tdl-sdk)
   - [4.1. Clone the Repository](#41-clone-the-repository)
   - [4.2. Compile the Samples](#42-compile-the-samples)
-- [05. CivetWeb — HTTP Streaming](#05-civetweb--http-streaming)
+- [05. CivetWeb & Application Build Setup](#05-civetweb--application-build-setup)
   - [5.1. Clone CivetWeb](#51-clone-civetweb)
-  - [5.2. Directory Structure](#52-directory-structure)
-  - [5.3. Configure the Application MakeFile](#53-configure-the-application-makefile)
+  - [5.2. Application Directory Requirement](#52-application-directory-requirement)
+  - [5.3. Container Directory Structure](#53-container-directory-structure)
+  - [5.4. Configure the Application MakeFile](#54-configure-the-application-makefile)
 - [06. System Image Deployment](#06-system-image-deployment)
   - [6.1. Flash the Image to the MicroSD Card](#61-flash-the-image-to-the-microsd-card)
   - [6.2. Configure Wi-Fi](#62-configure-wi-fi)
@@ -42,7 +43,7 @@
 - [08. Software Architecture & Thermal/Performance Optimization](#08-software-architecture--thermalperformance-optimization)
   - [8.1. Source File Responsibilities](#81-source-file-responsibilities)
   - [8.2. Core Optimization Strategies for Low CPU Usage & Heat Reduction](#82-core-optimization-strategies-for-low-cpu-usage--heat-reduction)
-- [09. References](#09-references)
+- [09. References & Repositories](#09-references--repositories)
 
 ---
 
@@ -165,7 +166,7 @@ Run this command on the host machine, replacing the source path with the absolut
 docker run -v /path/to/LicheeRV-Nano-Build/:/workspace -it licheervnano-build-ubuntu /bin/bash
 ```
 
-Once inside the container, use `/workspace` as the working directory for the following steps.
+Once inside the container, `/workspace` serves as the root working directory representing the `LicheeRV-Nano-Build` tree.
 
 ### 3.3. Configure and Compile Buildroot
 
@@ -208,9 +209,9 @@ cd cvitek-tdl-sdk-sg200x/sample
 
 ---
 
-## 05. CivetWeb — HTTP Streaming
+## 05. CivetWeb & Application Build Setup
 
-CivetWeb provides the embedded HTTP server dependency for the `http_streamer_tdl.c` application.
+CivetWeb provides the embedded HTTP server dependency for the `http_streamer_tdl` streaming application.
 
 ### 5.1. Clone CivetWeb
 
@@ -221,7 +222,17 @@ cd /workspace
 git clone --branch v1.15 --depth=1 https://github.com/civetweb/civetweb.git
 ```
 
-### 5.2. Directory Structure
+### 5.2. Application Directory Requirement
+
+To ensure proper cross-compilation against the build system libraries, all application source files (`.c`, `.h`, and `Makefile`) **must be placed inside the container** at the following exact path:
+
+```text
+/workspace/middleware/v2/sample/http_streamer_tdl/
+```
+
+> **Note:** `/workspace` in the container corresponds to the local `LicheeRV-Nano-Build` repository root directory on the host machine.
+
+### 5.3. Container Directory Structure
 
 The relevant project directories inside the container are organized as follows:
 
@@ -229,17 +240,39 @@ The relevant project directories inside the container are organized as follows:
 /workspace/
 ├── build/
 ├── buildroot/
+├── civetweb/
+│   ├── include/
+│   │   └── civetweb.h
+│   └── src/
+│       └── civetweb.c
 ├── cvitek-tdl-sdk-sg200x/
-└── civetweb/
-    ├── include/
-    │   └── civetweb.h
-    └── src/
-        └── civetweb.c
+└── middleware/
+    └── v2/
+        └── sample/
+            └── http_streamer_tdl/
+                ├── fmp4_init_segment.c
+                ├── fmp4_init_segment.h
+                ├── http_streamer_tdl.c
+                ├── Makefile
+                ├── mse_stream.c
+                ├── mse_stream.h
+                ├── sensor_config.c
+                ├── sensor_config.h
+                ├── vb_pool.c
+                ├── vb_pool.h
+                ├── venc_handler.c
+                ├── venc_handler.h
+                ├── vi_init.c
+                ├── vi_init.h
+                ├── vpss_init.c
+                ├── vpss_init.h
+                ├── web_handler.c
+                └── web_handler.h
 ```
 
-### 5.3. Configure the Application MakeFile
+### 5.4. Configure the Application MakeFile
 
-The application's `MakeFile` must reference CivetWeb using its path inside the container:
+The application's `Makefile` must reference CivetWeb using its path inside the container:
 
 ```makefile
 CIVETWEB_DIR := /workspace/civetweb
@@ -247,7 +280,7 @@ CIVETWEB_SOURCE := $(CIVETWEB_DIR)/src/civetweb.c
 CIVETWEB_INCLUDE_DIR := $(CIVETWEB_DIR)/include
 ```
 
-**Note:** Cloning CivetWeb provides its source code; it does not, by itself, compile or deploy the HTTP streaming application to the board. The application must still be built with the appropriate RISC-V cross-compiler and SDK libraries.
+**Note:** Cloning CivetWeb provides its source code; it does not, by itself, compile or deploy the HTTP streaming application to the board. The application must still be built with the appropriate RISC-V cross-compiler and SDK libraries inside the `/workspace/middleware/v2/sample/http_streamer_tdl` directory.
 
 ---
 
@@ -255,7 +288,7 @@ CIVETWEB_INCLUDE_DIR := $(CIVETWEB_DIR)/include
 
 ### 6.1. Flash the Image to the MicroSD Card
 
-Write the compiled image to the MicroSD card:
+A **MicroSD card of 8 GB or larger** (Class 10 or UHS-I recommended) is required to hold the Linux system partitions and application binaries. Write the compiled image to the MicroSD card:
 
 ```bash
 sudo dd if=/path/to/image.img of=/dev/sdX bs=16M status=progress conv=fdatasync

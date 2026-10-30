@@ -41,7 +41,7 @@ MW_SAMPLE_PATH = $(MW_PATH)/sample/common
 # Kernel headers
 KERNEL_BUILD_PATH ?= $(TOP_DIR)/linux_5.10/build/sg2002_licheervnano_sd
 
-# ISP Include paths (Soporte seguro para CV181X / SG2002 / CV180X)
+# ISP Include paths
 ifeq ($(CHIP), CV180X)
 MW_ISP_INC_PATH = $(MW_INC_PATH)/isp/cv180x
 CFLAGS += -DCV180X
@@ -102,8 +102,9 @@ CFLAGS += -I$(MW_SAMPLE_PATH)
 CFLAGS += -I$(TDL_INC_PATH)
 CFLAGS += -I$(TDL_INC_PATH)/cvi_tdl
 CFLAGS += -I$(TDL_INC_PATH)/cvi_tdl_app
+CFLAGS += -I$(TDL_SAMPLE_PATH)/3rd/middleware/v2/include
 
-# Kernel headers (Solo el directorio raíz de headers del kernel, sin /linux)
+# Kernel headers
 CFLAGS += -I$(KERNEL_BUILD_PATH)/riscv/usr/include
 
 # Library paths

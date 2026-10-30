@@ -98,17 +98,46 @@ The current work covers system configuration, image compilation, development too
 
 ### Hardware Diagrams & Visual References
 
-| Target Board & Camera Setup | Pinout Diagram |
-| :---: | :---: |
-| ![Target Board & Camera Setup](images/img5.jpeg) | ![Pinout Diagram](images/img4.png) |
+<table width="100%">
+  <tr>
+    <th width="50%" align="center">Target Board & Camera Setup</th>
+    <th width="50%" align="center">Pinout Diagram</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle">
+      <img src="images/img5.jpeg" alt="Target Board & Camera Setup" width="100%">
+    </td>
+    <td align="center" valign="middle">
+      <img src="images/img4.png" alt="Pinout Diagram" width="100%">
+    </td>
+  </tr>
+</table>
 
-| Board Variants & Physical Layout |
-| :---: |
-| ![Board Variants & Physical Layout](images/img3.png) |
+<table width="100%">
+  <tr>
+    <th align="center">Board Variants & Physical Layout</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle">
+      <img src="images/img3.png" alt="Board Variants & Physical Layout" width="100%">
+    </td>
+  </tr>
+</table>
 
-| SG2002 Subsystem Block Diagram | SG2002 System Architecture |
-| :---: | :---: |
-| ![SG2002 Subsystem Block Diagram](images/img2.png) | ![SG2002 System Architecture](images/img1.png) |
+<table width="100%">
+  <tr>
+    <th width="50%" align="center">SG2002 Subsystem Block Diagram</th>
+    <th width="50%" align="center">SG2002 System Architecture</th>
+  </tr>
+  <tr>
+    <td align="center" valign="middle">
+      <img src="images/img2.png" alt="SG2002 Subsystem Block Diagram" width="100%">
+    </td>
+    <td align="center" valign="middle">
+      <img src="images/img1.png" alt="SG2002 System Architecture" width="100%">
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -315,7 +344,9 @@ Instead of processing frames in software via CPU routines:
 - **NPU Acceleration (`TPU / CVI_TDL`)** handles INT8 YOLOv8 tensor operations on dedicated silicon, leaving the RISC-V host CPU idling.
 - **Hardware Encoder (`VENC`)** compresses raw NV21 frames directly into H.264 streams in real-time.
 
-![Diagrama de Flujo del Sistema](images/Flowchart1.jpeg)
+<p align="center">
+  <img src="images/Flowchart1.jpeg" alt="Diagrama de Flujo del Sistema" width="85%">
+</p>
 
 #### 2. Zero Per-Frame Heap Allocation (Persistent Dynamic Buffering)
 Executing `malloc()` and `free()` inside 30 FPS high-frequency loops causes kernel heap fragmentation, system calls overhead, thermal throttling, and CPU spikes.

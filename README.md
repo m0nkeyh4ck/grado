@@ -30,7 +30,6 @@
   - [4.2. Clone CivetWeb](#42-clone-civetweb)
   - [4.3. Application Directory Requirement](#43-application-directory-requirement)
   - [4.4. Container Directory Structure](#44-container-directory-structure)
-  - [4.5. Configure the Application Makefile](#45-configure-the-application-makefile)
 - [05. Compilation & System Image Build](#05-compilation--system-image-build)
   - [5.1. Configure Buildroot Environment](#51-configure-buildroot-environment)
   - [5.2. Compile CVI TDL Samples](#52-compile-cvi-tdl-samples)
@@ -241,16 +240,6 @@ The relevant project directories inside the container are organized as follows:
                 ├── vpss_init.h
                 ├── web_handler.c
                 └── web_handler.h
-```
-
-### 4.5. Configure the Application Makefile
-
-The application's `Makefile` must reference CivetWeb using its path inside the container:
-
-```makefile
-CIVETWEB_DIR := /workspace/civetweb
-CIVETWEB_SOURCE := $(CIVETWEB_DIR)/src/civetweb.c
-CIVETWEB_INCLUDE_DIR := $(CIVETWEB_DIR)/include
 ```
 
 ---

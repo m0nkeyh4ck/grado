@@ -4,14 +4,14 @@
 
 *Implementation and Optimization of a YOLO Model on the LicheeRV Nano (SG2002) Embedded Platform for Object Detection with Replicable Documentation in Educational Environments.*
 
-| Academic Information | Details |
-|---|---|
-| **Author** | Jesús Antonio López Trigozo |
-| **Institution** | Universidad Nacional de Colombia |
-| **Campus** | Bogotá |
-| **Faculty** | Faculty of Engineering |
-| **Advisor** | Carlos Iván Camargo Bareño |
-| **Status** | 🟡 In Progress |
+| Academic Information | Details | 
+| ----- | ----- | 
+| **Author** | Jesús Antonio López Trigozo | 
+| **Institution** | Universidad Nacional de Colombia | 
+| **Campus** | Bogotá | 
+| **Faculty** | Faculty of Engineering | 
+| **Advisor** | Carlos Iván Camargo Bareño | 
+| **Status** | 🟡 In Progress | 
 
 ---
 
@@ -26,15 +26,15 @@
   - [3.1. Host Prerequisites & Docker Installation](#31-host-prerequisites--docker-installation)
   - [3.2. Clone the Build Environment](#32-clone-the-build-environment)
   - [3.3. Start the Docker Container](#33-start-the-docker-container)
-- [04. Dependencies & Software Setup](#04-dependencies--software-setup)
+- [04. Base Dependencies & Software Setup](#04-base-dependencies--software-setup)
   - [4.1. Clone CVI TDL SDK](#41-clone-cvi-tdl-sdk)
   - [4.2. Clone and Cross-Compile CivetWeb for RISC-V](#42-clone-and-cross-compile-civetweb-for-risc-v)
-  - [4.3. Application Directory Requirement](#43-application-directory-requirement)
-  - [4.4. Container Directory Structure](#44-container-directory-structure)
-- [05. Compilation & System Image Build](#05-compilation--system-image-build)
+- [05. System Compilation & Application Build](#05-system-compilation--application-build)
   - [5.1. Configure Buildroot Environment](#51-configure-buildroot-environment)
-  - [5.2. Build Full System Image (build_all)](#52-build-full-system-image-build_all)
+  - [5.2. Build Base System Image (build_all)](#52-build-base-system-image-build_all)
   - [5.3. Compile CVI TDL Samples](#53-compile-cvi-tdl-samples)
+  - [5.4. Deploy and Compile Application (http_streamer_tdl)](#54-deploy-and-compile-application-http_streamer_tdl)
+  - [5.5. Container Directory Structure](#55-container-directory-structure)
 - [06. System Image Deployment](#06-system-image-deployment)
   - [6.1. Flash the Image to the MicroSD Card](#61-flash-the-image-to-the-microsd-card)
   - [6.2. Configure Wi-Fi](#62-configure-wi-fi)
@@ -186,9 +186,7 @@ Once inside the container, `/workspace` serves as the root working directory rep
 
 ---
 
-## 04. Dependencies & Software Setup
-
-All libraries, SDKs, and custom source files must be cloned and structured inside `/workspace` before compiling the final system image.
+## 04. Base Dependencies & Software Setup
 
 ### 4.1. Clone CVI TDL SDK
 
@@ -218,24 +216,64 @@ cp libcivetweb.a /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/s
 cp include/civetweb.h /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/include/
 ```
 
-### 4.3. Application Directory Requirement
+---
 
-To ensure proper cross-compilation against the build system libraries, all application source files (`.c`, `.h`, and `Makefile`) **must be placed inside the container** at the following exact path:
+## 05. System Compilation & Application Build
 
-```text
-/workspace/middleware/v2/sample/http_streamer_tdl/
+### 5.1. Configure Buildroot Environment
+
+Execute the following commands **inside the container**:
+
+```bash
+cd /workspace
+source build/cvisetup.sh
+defconfig sg2002_licheervnano_sd
+git config --global --add safe.directory /workspace
 ```
 
-> **Note:** `/workspace` in the container corresponds to the local `LicheeRV-Nano-Build` repository root directory on the host machine.
+### 5.2. Build Base System Image (build_all)
 
-### 4.4. Container Directory Structure
+Trigger the primary base build process **before** placing custom application code. This step builds kernel headers, toolchains, ISP header files, middleware libraries, and the Buildroot sysroot:
 
-The relevant project directories inside the container are organized as follows:
+```bash
+cd /workspace
+build_all
+```
+
+> **Note:** The full base compilation (`build_all`) is a highly resource-intensive process. Depending on host hardware capabilities (CPU core count, RAM allocation, and disk I/O speed), this step typically takes between **30 minutes to over 1 hour** to complete.
+
+### 5.3. Compile CVI TDL Samples
+
+Once `build_all` has successfully generated the required middleware and ISP system header files, add the cross-compiler to `PATH` and compile the SDK samples:
+
+```bash
+export PATH="/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
+cd /workspace/cvitek-tdl-sdk-sg200x/sample
+./compile_sample.sh
+```
+
+### 5.4. Deploy and Compile Application (http_streamer_tdl)
+
+Now that all base system headers (`cvi_comm_isp.h`, `cvi_comm_gdc.h`), sysroot libraries (`libcivetweb.a`), and CVI TDL binaries are built and ready, place the `http_streamer_tdl` project directory inside the container at `/workspace/middleware/v2/sample/http_streamer_tdl/` and compile it:
+
+```bash
+cd /workspace/middleware/v2/sample/http_streamer_tdl
+make clean
+make
+```
+
+### 5.5. Container Directory Structure
+
+The complete project directory tree inside the container is organized as follows:
 
 ```text
 /workspace/
 ├── build/
 ├── buildroot/
+│   └── output/
+│       └── host/
+│           └── riscv64-buildroot-linux-musl/
+│               └── sysroot/
 ├── civetweb/
 │   ├── include/
 │   │   └── civetweb.h
@@ -264,44 +302,6 @@ The relevant project directories inside the container are organized as follows:
                 ├── vpss_init.h
                 ├── web_handler.c
                 └── web_handler.h
-```
-
----
-
-## 05. Compilation & System Image Build
-
-Once all dependencies, CivetWeb libraries, and custom application sources are present in `/workspace`, proceed with configuring Buildroot, compiling the system image, and then compiling the SDK samples.
-
-### 5.1. Configure Buildroot Environment
-
-Execute the following commands **inside the container**:
-
-```bash
-cd /workspace
-source build/cvisetup.sh
-defconfig sg2002_licheervnano_sd
-git config --global --add safe.directory /workspace
-```
-
-### 5.2. Build Full System Image (build_all)
-
-Trigger the primary build process. This step builds kernel headers, toolchains, middleware libraries, and compiles custom applications located in `middleware/v2/sample/`:
-
-```bash
-cd /workspace
-build_all
-```
-
-> **Note:** The full system compilation (`build_all`) is a highly resource-intensive process. Depending on host hardware capabilities (CPU core count, RAM allocation, and disk I/O speed), this step typically takes between **30 minutes to over 1 hour** to complete.
-
-### 5.3. Compile CVI TDL Samples
-
-Once `build_all` has successfully generated the required middleware and system files, add the cross-compiler to `PATH` and compile the SDK samples:
-
-```bash
-export PATH="/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
-cd /workspace/cvitek-tdl-sdk-sg200x/sample
-./compile_sample.sh
 ```
 
 ---

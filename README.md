@@ -22,18 +22,19 @@
   - [LicheeRV Nano — SG2002](#licheerv-nano--sg2002)
   - [Board Variants](#board-variants)
   - [Hardware Diagrams & Visual References](#hardware-diagrams--visual-references)
-- [03. Development Environment](#03-development-environment)
-  - [3.1. Clone the Development Environment](#31-clone-the-build-environment)
+- [03. Development Environment Setup](#03-development-environment-setup)
+  - [3.1. Clone the Build Environment](#31-clone-the-build-environment)
   - [3.2. Start the Docker Container](#32-start-the-docker-container)
-  - [3.3. Configure and Compile Buildroot](#33-configure-and-compile-buildroot)
-- [04. CVI TDL SDK](#04-cvi-tdl-sdk)
-  - [4.1. Clone the Repository](#41-clone-the-repository)
-  - [4.2. Compile the Samples](#42-compile-the-samples)
-- [05. CivetWeb & Application Build Setup](#05-civetweb--application-build-setup)
-  - [5.1. Clone CivetWeb](#51-clone-civetweb)
-  - [5.2. Application Directory Requirement](#52-application-directory-requirement)
-  - [5.3. Container Directory Structure](#53-container-directory-structure)
-  - [5.4. Configure the Application MakeFile](#54-configure-the-application-makefile)
+- [04. Dependencies & Software Setup](#04-dependencies--software-setup)
+  - [4.1. Clone CVI TDL SDK](#41-clone-cvi-tdl-sdk)
+  - [4.2. Clone CivetWeb](#42-clone-civetweb)
+  - [4.3. Application Directory Requirement](#43-application-directory-requirement)
+  - [4.4. Container Directory Structure](#44-container-directory-structure)
+  - [4.5. Configure the Application Makefile](#45-configure-the-application-makefile)
+- [05. Compilation & System Image Build](#05-compilation--system-image-build)
+  - [5.1. Configure Buildroot Environment](#51-configure-buildroot-environment)
+  - [5.2. Compile CVI TDL Samples](#52-compile-cvi-tdl-samples)
+  - [5.3. Build System Image](#53-build-system-image)
 - [06. System Image Deployment](#06-system-image-deployment)
   - [6.1. Flash the Image to the MicroSD Card](#61-flash-the-image-to-the-microsd-card)
   - [6.2. Configure Wi-Fi](#62-configure-wi-fi)
@@ -101,12 +102,12 @@ The current work covers system configuration, image compilation, development too
 
 <table width="100%">
   <tr>
-    <th width="50%" align="center">Board & Camera Setup</th>
+    <th width="50%" align="center">Target Board & Camera Setup</th>
     <th width="50%" align="center">Pinout Diagram</th>
   </tr>
   <tr>
     <td align="center" valign="middle">
-      <img src="images/img5.jpeg" alt="Board & Camera Setup" width="100%">
+      <img src="images/img5.jpeg" alt="Target Board & Camera Setup" width="100%">
     </td>
     <td align="center" valign="middle">
       <img src="images/img4.png" alt="Pinout Diagram" width="100%">
@@ -142,7 +143,7 @@ The current work covers system configuration, image compilation, development too
 
 ---
 
-## 03. Development Environment
+## 03. Development Environment Setup
 
 The build environment uses Docker to isolate dependencies and provide a consistent workspace for compiling the system.
 
@@ -168,61 +169,33 @@ docker run -v /path/to/LicheeRV-Nano-Build/:/workspace -it licheervnano-build-ub
 
 Once inside the container, `/workspace` serves as the root working directory representing the `LicheeRV-Nano-Build` tree.
 
-### 3.3. Configure and Compile Buildroot
-
-Execute the following commands **inside the container**:
-
-```bash
-cd /workspace
-source build/cvisetup.sh
-defconfig sg2002_licheervnano_sd
-git config --global --add safe.directory /workspace
-build_all
-```
-
 ---
 
-## 04. CVI TDL SDK
+## 04. Dependencies & Software Setup
 
-The CVI TDL SDK provides sample applications and software components used during preparation of the AI deployment environment.
+All libraries, SDKs, and custom source files must be cloned and structured inside `/workspace` before compiling the final system image.
 
-### 4.1. Clone the Repository
+### 4.1. Clone CVI TDL SDK
 
-From the container's `/workspace` directory:
+Inside the container's `/workspace` directory:
 
 ```bash
 cd /workspace
 git clone https://github.com/milkv-duo/cvitek-tdl-sdk-sg200x.git --depth=1
 ```
 
-### 4.2. Compile the Samples
-
-Add the cross-compiler to `PATH` and compile the samples:
-
-```bash
-export PATH="$PWD/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
-cd cvitek-tdl-sdk-sg200x/sample
-./compile_sample.sh
-```
-
 **Directory requirement:** The CVI TDL repository must be located at `/workspace/cvitek-tdl-sdk-sg200x` inside the container.
 
----
+### 4.2. Clone CivetWeb
 
-## 05. CivetWeb & Application Build Setup
-
-CivetWeb provides the embedded HTTP server dependency for the `http_streamer_tdl` streaming application.
-
-### 5.1. Clone CivetWeb
-
-Clone version `v1.15` inside `/workspace`:
+CivetWeb provides the embedded HTTP server dependency for the streaming application. Clone version `v1.15` inside `/workspace`:
 
 ```bash
 cd /workspace
 git clone --branch v1.15 --depth=1 https://github.com/civetweb/civetweb.git
 ```
 
-### 5.2. Application Directory Requirement
+### 4.3. Application Directory Requirement
 
 To ensure proper cross-compilation against the build system libraries, all application source files (`.c`, `.h`, and `Makefile`) **must be placed inside the container** at the following exact path:
 
@@ -232,7 +205,7 @@ To ensure proper cross-compilation against the build system libraries, all appli
 
 > **Note:** `/workspace` in the container corresponds to the local `LicheeRV-Nano-Build` repository root directory on the host machine.
 
-### 5.3. Container Directory Structure
+### 4.4. Container Directory Structure
 
 The relevant project directories inside the container are organized as follows:
 
@@ -270,7 +243,7 @@ The relevant project directories inside the container are organized as follows:
                 └── web_handler.h
 ```
 
-### 5.4. Configure the Application MakeFile
+### 4.5. Configure the Application Makefile
 
 The application's `Makefile` must reference CivetWeb using its path inside the container:
 
@@ -280,7 +253,41 @@ CIVETWEB_SOURCE := $(CIVETWEB_DIR)/src/civetweb.c
 CIVETWEB_INCLUDE_DIR := $(CIVETWEB_DIR)/include
 ```
 
-**Note:** Cloning CivetWeb provides its source code; it does not, by itself, compile or deploy the HTTP streaming application to the board. The application must still be built with the appropriate RISC-V cross-compiler and SDK libraries inside the `/workspace/middleware/v2/sample/http_streamer_tdl` directory.
+---
+
+## 05. Compilation & System Image Build
+
+Once all dependencies and custom application sources are present in `/workspace`, proceed with configuring Buildroot, compiling the SDK samples, and building the complete system image.
+
+### 5.1. Configure Buildroot Environment
+
+Execute the following commands **inside the container**:
+
+```bash
+cd /workspace
+source build/cvisetup.sh
+defconfig sg2002_licheervnano_sd
+git config --global --add safe.directory /workspace
+```
+
+### 5.2. Compile CVI TDL Samples
+
+Add the cross-compiler to `PATH` and compile the SDK samples:
+
+```bash
+export PATH="$PWD/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
+cd cvitek-tdl-sdk-sg200x/sample
+./compile_sample.sh
+```
+
+### 5.3. Build System Image
+
+Return to `/workspace` and trigger the full compilation process:
+
+```bash
+cd /workspace
+build_all
+```
 
 ---
 

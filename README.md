@@ -98,13 +98,17 @@ The current work covers system configuration, image compilation, development too
 
 ### Hardware Diagrams & Visual References
 
-| Board Variants & Physical Layout | Pinout Diagram |
+| Target Board & Camera Setup | Board Variants & Physical Layout |
 | :---: | :---: |
-| ![Board Variants](images/img3.png) | ![Pinout Diagram](images/img4.png) |
+| ![Target Board & Camera Setup](images/img5.jpeg) | ![Board Layout](images/img3.png) |
 
-| SG2002 System Architecture | SG2002 Subsystem Block Diagram |
+| Pinout Diagram | SG2002 Subsystem Block Diagram |
 | :---: | :---: |
-| ![SG2002 Architecture](images/img1.png) | ![SG2002 Block Diagram](images/img2.png) |
+| ![Pinout Diagram](images/img4.jpg) | ![SG2002 Block Diagram](images/img2.jpg) |
+
+| SG2002 System Architecture |
+| :---: |
+| ![SG2002 System Architecture](images/img1.jpg) |
 
 ---
 

@@ -13,35 +13,40 @@
 | **Advisor** | Carlos Iván Camargo Bareño | 
 | **Status** | 🟡 In Progress | 
 
+---
+
 ## Table of Contents
 
-* [01. Project Overview](#01-project-overview)
-* [02. Hardware Platform](#02-hardware-platform)
-  * [LicheeRV Nano — SG2002](#licheerv-nano--sg2002)
-  * [Board Variants](#board-variants)
-  * [Hardware Diagrams & Visual References](#hardware-diagrams--visual-references)
-* [03. Development Environment Setup](#03-development-environment-setup)
-  * [3.1. Clone the Build Environment](#31-clone-the-build-environment)
-  * [3.2. Start the Docker Container](#32-start-the-docker-container)
-* [04. Dependencies & Software Setup](#04-dependencies--software-setup)
-  * [4.1. Clone CVI TDL SDK](#41-clone-cvi-tdl-sdk)
-  * [4.2. Clone CivetWeb](#42-clone-civetweb)
-  * [4.3. Application Directory Requirement](#43-application-directory-requirement)
-  * [4.4. Container Directory Structure](#44-container-directory-structure)
-* [05. Compilation & System Image Build](#05-compilation--system-image-build)
-  * [5.1. Configure Buildroot Environment](#51-configure-buildroot-environment)
-  * [5.2. Build Full System Image (build_all)](#52-build-full-system-image-build_all)
-  * [5.3. Compile CVI TDL Samples](#53-compile-cvi-tdl-samples)
-* [06. System Image Deployment](#06-system-image-deployment)
-  * [6.1. Flash the Image to the MicroSD Card](#61-flash-the-image-to-the-microsd-card)
-  * [6.2. Configure Wi-Fi](#62-configure-wi-fi)
-  * [6.3. Identify the Board on the Network](#63-identify-the-board-on-the-network)
-  * [6.4. Connect Through SSH](#64-connect-through-ssh)
-* [07. Current Development Scope](#07-current-development-scope)
-* [08. Software Architecture & Thermal/Performance Optimization](#08-software-architecture--thermalperformance-optimization)
-  * [8.1. Source File Responsibilities](#81-source-file-responsibilities)
-  * [8.2. Core Optimization Strategies for Low CPU Usage & Heat Reduction](#82-core-optimization-strategies-for-low-cpu-usage--heat-reduction)
-* [09. References & Repositories](#09-references--repositories)
+- [01. Project Overview](#01-project-overview)
+- [02. Hardware Platform](#02-hardware-platform)
+  - [LicheeRV Nano — SG2002](#licheerv-nano--sg2002)
+  - [Board Variants](#board-variants)
+  - [Hardware Diagrams \& Visual References](#hardware-diagrams--visual-references)
+- [03. Development Environment Setup](#03-development-environment-setup)
+  - [3.1. Host Prerequisites \& Docker Installation](#31-host-prerequisites--docker-installation)
+  - [3.2. Clone the Build Environment](#32-clone-the-build-environment)
+  - [3.3. Start the Docker Container](#33-start-the-docker-container)
+- [04. Dependencies \& Software Setup](#04-dependencies--software-setup)
+  - [4.1. Clone CVI TDL SDK](#41-clone-cvi-tdl-sdk)
+  - [4.2. Clone CivetWeb](#42-clone-civetweb)
+  - [4.3. Application Directory Requirement](#43-application-directory-requirement)
+  - [4.4. Container Directory Structure](#44-container-directory-structure)
+- [05. Compilation \& System Image Build](#05-compilation--system-image-build)
+  - [5.1. Configure Buildroot Environment](#51-configure-buildroot-environment)
+  - [5.2. Build Full System Image (build\_all)](#52-build-full-system-image-build_all)
+  - [5.3. Compile CVI TDL Samples](#53-compile-cvi-tdl-samples)
+- [06. System Image Deployment](#06-system-image-deployment)
+  - [6.1. Flash the Image to the MicroSD Card](#61-flash-the-image-to-the-microsd-card)
+  - [6.2. Configure Wi-Fi](#62-configure-wi-fi)
+  - [6.3. Identify the Board on the Network](#63-identify-the-board-on-the-network)
+  - [6.4. Connect Through SSH](#64-connect-through-ssh)
+- [07. Current Development Scope](#07-current-development-scope)
+- [08. Software Architecture \& Thermal/Performance Optimization](#08-software-architecture--thermalperformance-optimization)
+  - [8.1. Source File Responsibilities](#81-source-file-responsibilities)
+  - [8.2. Core Optimization Strategies for Low CPU Usage \& Heat Reduction](#82-core-optimization-strategies-for-low-cpu-usage--heat-reduction)
+- [09. References \& Repositories](#09-references--repositories)
+
+---
 
 ## 01. Project Overview
 
@@ -51,12 +56,14 @@ The current work covers system configuration, image compilation, development too
 
 **Project objectives**
 
-* Customize and compile a Buildroot-based Linux image.
-* Reduce unnecessary software and system overhead.
-* Configure network connectivity and remote access.
-* Prepare the CVI TDL SDK for application development.
-* Integrate CivetWeb for HTTP streaming.
-* Document the workflow for reproducibility in educational environments.
+- Customize and compile a Buildroot-based Linux image.
+- Reduce unnecessary software and system overhead.
+- Configure network connectivity and remote access.
+- Prepare the CVI TDL SDK for application development.
+- Integrate CivetWeb for HTTP streaming.
+- Document the workflow for reproducibility in educational environments.
+
+---
 
 ## 02. Hardware Platform
 
@@ -134,11 +141,28 @@ The current work covers system configuration, image compilation, development too
   </tr>
 </table>
 
+---
+
 ## 03. Development Environment Setup
 
 The build environment uses Docker to isolate dependencies and provide a consistent workspace for compiling the system.
 
-### 3.1. Clone the Build Environment
+### 3.1. Host Prerequisites & Docker Installation
+
+To avoid permission conflicts during rootfs generation and container mounting, switch to superuser privileges (`root`) and navigate to its home directory before starting:
+
+```bash
+sudo su
+cd /root
+```
+
+Install `curl` and deploy Docker on the host system using the official installation script:
+
+```bash
+apt update && apt install curl -y && curl -fsSL https://get.docker.com | sh
+```
+
+### 3.2. Clone the Build Environment
 
 Run these commands on the **host machine** to download the source code and build the Docker image:
 
@@ -150,7 +174,7 @@ cd host/ubuntu
 docker build -t licheervnano-build-ubuntu .
 ```
 
-### 3.2. Start the Docker Container
+### 3.3. Start the Docker Container
 
 Run this command on the host machine, replacing the source path with the absolute path of your local repository:
 
@@ -159,6 +183,8 @@ docker run -v /path/to/LicheeRV-Nano-Build/:/workspace -it licheervnano-build-ub
 ```
 
 Once inside the container, `/workspace` serves as the root working directory representing the `LicheeRV-Nano-Build` tree.
+
+---
 
 ## 04. Dependencies & Software Setup
 
@@ -232,6 +258,8 @@ The relevant project directories inside the container are organized as follows:
                 └── web_handler.h
 ```
 
+---
+
 ## 05. Compilation & System Image Build
 
 Once all dependencies and custom application sources are present in `/workspace`, proceed with configuring Buildroot, compiling the system image, and then compiling the SDK samples.
@@ -256,6 +284,8 @@ cd /workspace
 build_all
 ```
 
+> **Note:** The full system compilation (`build_all`) is a highly resource-intensive process. Depending on host hardware capabilities (CPU core count, RAM allocation, and disk I/O speed), this step typically takes between **30 minutes to over 1 hour** to complete.
+
 ### 5.3. Compile CVI TDL Samples
 
 Once `build_all` has successfully generated the required middleware and ISP header files, add the cross-compiler to `PATH` and compile the SDK samples:
@@ -265,6 +295,8 @@ export PATH="/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
 cd /workspace/cvitek-tdl-sdk-sg200x/sample
 ./compile_sample.sh
 ```
+
+---
 
 ## 06. System Image Deployment
 
@@ -311,20 +343,24 @@ Connect to the board using the default root account:
 ssh root@<BOARD_IP_ADDRESS>
 ```
 
+---
+
 ## 07. Current Development Scope
 
 The repository documents the setup and configuration of the embedded Linux environment and the supporting software required for development on the SG2002 platform.
 
 The current workflow covers:
 
-* Buildroot configuration and system image compilation.
-* Docker-based development environment.
-* CVI TDL SDK setup and sample compilation.
-* CivetWeb integration for HTTP streaming.
-* MicroSD image deployment.
-* Wireless networking and SSH access.
+- Buildroot configuration and system image compilation.
+- Docker-based development environment.
+- CVI TDL SDK setup and sample compilation.
+- CivetWeb integration for HTTP streaming.
+- MicroSD image deployment.
+- Wireless networking and SSH access.
 
 YOLO deployment, inference validation, and performance evaluation remain part of the ongoing thesis work.
+
+---
 
 ## 08. Software Architecture & Thermal/Performance Optimization
 
@@ -344,20 +380,18 @@ The streaming application (`http_streamer_tdl`) is engineered specifically for r
 | `mse_stream` | Media Source Extensions (MSE) HTTP chunked video streaming server handler. | Passive thread synchronization and static copy buffering. | 
 | `web_handler` | CivetWeb HTTP routes (`/`, `/stream`, `/stats`), HTML/JS web player interface. | Network socket I/O decoupled from mutex lock scopes. | 
 
+---
+
 ### 8.2. Core Optimization Strategies for Low CPU Usage & Heat Reduction
 
 #### 1. Hardware Pipeline Offloading (Zero-CPU Video/AI Pipeline)
 
 Instead of processing frames in software via CPU routines:
 
-* **MIPI CSI Camera Capture (`VI`)** streams frames via DMA directly into hardware memory pools (`VB Pool`).
-* **Video Process SubSystem (`VPSS`)** splits the capture into two hardware streams: Channel 0 scales frames to 1080p for encoding, while Channel 1 scales frames to 640x480 for NPU inference.
-* **NPU Acceleration (`TPU / CVI_TDL`)** handles INT8 YOLOv8 tensor operations on dedicated silicon, leaving the RISC-V host CPU idling.
-* **Hardware Encoder (`VENC`)** compresses raw NV21 frames directly into H.264 streams in real-time.
-
-<p align="center">
-  <img src="images/Flowchart1.jpeg" alt="Diagrama de Flujo del Sistema" width="85%">
-</p>
+- **MIPI CSI Camera Capture (`VI`)** streams frames via DMA directly into hardware memory pools (`VB Pool`).
+- **Video Process SubSystem (`VPSS`)** splits the capture into two hardware streams: Channel 0 scales frames to 1080p for encoding, while Channel 1 scales frames to 640x480 for NPU inference.
+- **NPU Acceleration (`TPU / CVI_TDL`)** handles INT8 YOLOv8 tensor operations on dedicated silicon, leaving the RISC-V host CPU idling.
+- **Hardware Encoder (`VENC`)** compresses raw NV21 frames directly into H.264 streams in real-time.
 
 #### 2. Zero Per-Frame Heap Allocation (Persistent Dynamic Buffering)
 
@@ -429,24 +463,26 @@ int written = mg_write(conn, local_buf, size);
 
 In `venc_handler.c`, the NPU inference thread (`run_tdl_thread`) processes detection outputs and maps integer COCO class IDs (`stObjMeta.info[i].classes`) directly to an array of static class strings (`COCO_CLASSES[cls]`) along with confidence percentage scores (`stObjMeta.info[i].bbox.score`). Hardware vector drawing routines (`CVI_TDL_Service_ObjectDrawRect`) overlay bounding boxes and English labels on video frames prior to H.264 compression, requiring zero client-side browser rendering computation.
 
+---
+
 ## 09. References & Repositories
 
-1. **Sipeed LicheeRV Nano Official Documentation:**  
+1. **Sipeed LicheeRV Nano Official Documentation:**
    [Sipeed LicheeRV Nano Wiki - Overview](https://wiki.sipeed.com/hardware/en/lichee/RV_Nano/1_intro.html)
 
-2. **Habr Technical Article — LicheeRV Nano Testing & Development Workflow:**  
+2. **Habr Technical Article — LicheeRV Nano Testing & Development Workflow:**
    [LicheeRV Nano Development, Integration, and Hardware Tests](https://habr.com/ru/articles/880230/)
 
-3. **Sipeed LicheeRV-Nano-Build Repository:**  
+3. **Sipeed LicheeRV-Nano-Build Repository:**
    [Sipeed LicheeRV-Nano-Build GitHub](https://github.com/sipeed/LicheeRV-Nano-Build)
 
-4. **SOPHGO Host Tools Repository:**  
+4. **SOPHGO Host Tools Repository:**
    [SOPHGO Host Tools GitHub](https://github.com/sophgo/host-tools)
 
-5. **CVI TDL SDK for SG200X Repository:**  
+5. **CVI TDL SDK for SG200X Repository:**
    [Milk-V Duo CVITEK TDL SDK GitHub](https://github.com/milkv-duo/cvitek-tdl-sdk-sg200x)
 
-6. **CivetWeb Embedded HTTP Server Repository:**  
+6. **CivetWeb Embedded HTTP Server Repository:**
    [CivetWeb GitHub](https://github.com/civetweb/civetweb)
 
 ---

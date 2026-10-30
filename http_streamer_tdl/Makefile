@@ -103,9 +103,8 @@ CFLAGS += -I$(TDL_INC_PATH)
 CFLAGS += -I$(TDL_INC_PATH)/cvi_tdl
 CFLAGS += -I$(TDL_INC_PATH)/cvi_tdl_app
 
-# Kernel headers LAST
+# Kernel headers (Solo el directorio raíz de headers del kernel, sin /linux)
 CFLAGS += -I$(KERNEL_BUILD_PATH)/riscv/usr/include
-CFLAGS += -I$(KERNEL_BUILD_PATH)/riscv/usr/include/linux
 
 # Library paths
 LDFLAGS = -L$(MW_LIB_PATH)
@@ -190,8 +189,8 @@ check-deps:
 
 help:
 	@echo "Targets disponibles:"
-	@echo "  all              - Verificar deps y compilar $(TARGET)"
-	@echo "  clean            - Limpiar archivos generados"
-	@echo "  install          - Instalar (requiere DESTDIR)"
-	@echo "  debug            - Build con símbolos de debug"
-	@echo "  check-deps       - Verificar dependencias"
+	@echo "  all               - Verificar deps y compilar $(TARGET)"
+	@echo "  clean             - Limpiar archivos generados"
+	@echo "  install           - Instalar (requiere DESTDIR)"
+	@echo "  debug             - Build con símbolos de debug"
+	@echo "  check-deps        - Verificar dependencias"

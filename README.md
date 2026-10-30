@@ -4,14 +4,14 @@
 
 *Implementation and Optimization of a YOLO Model on the LicheeRV Nano (SG2002) Embedded Platform for Object Detection with Replicable Documentation in Educational Environments.*
 
-| Academic Information | Details | 
-| ----- | ----- | 
-| **Author** | Jesús Antonio López Trigozo | 
-| **Institution** | Universidad Nacional de Colombia | 
-| **Campus** | Bogotá | 
-| **Faculty** | Faculty of Engineering | 
-| **Advisor** | Carlos Iván Camargo Bareño | 
-| **Status** | 🟡 In Progress | 
+| Academic Information | Details |
+|---|---|
+| **Author** | Jesús Antonio López Trigozo |
+| **Institution** | Universidad Nacional de Colombia |
+| **Campus** | Bogotá |
+| **Faculty** | Faculty of Engineering |
+| **Advisor** | Carlos Iván Camargo Bareño |
+| **Status** | 🟡 In Progress |
 
 ---
 
@@ -21,19 +21,19 @@
 - [02. Hardware Platform](#02-hardware-platform)
   - [LicheeRV Nano — SG2002](#licheerv-nano--sg2002)
   - [Board Variants](#board-variants)
-  - [Hardware Diagrams \& Visual References](#hardware-diagrams--visual-references)
+  - [Hardware Diagrams & Visual References](#hardware-diagrams--visual-references)
 - [03. Development Environment Setup](#03-development-environment-setup)
-  - [3.1. Host Prerequisites \& Docker Installation](#31-host-prerequisites--docker-installation)
+  - [3.1. Host Prerequisites & Docker Installation](#31-host-prerequisites--docker-installation)
   - [3.2. Clone the Build Environment](#32-clone-the-build-environment)
   - [3.3. Start the Docker Container](#33-start-the-docker-container)
-- [04. Dependencies \& Software Setup](#04-dependencies--software-setup)
+- [04. Dependencies & Software Setup](#04-dependencies--software-setup)
   - [4.1. Clone CVI TDL SDK](#41-clone-cvi-tdl-sdk)
-  - [4.2. Clone CivetWeb](#42-clone-civetweb)
+  - [4.2. Clone and Cross-Compile CivetWeb for RISC-V](#42-clone-and-cross-compile-civetweb-for-risc-v)
   - [4.3. Application Directory Requirement](#43-application-directory-requirement)
   - [4.4. Container Directory Structure](#44-container-directory-structure)
-- [05. Compilation \& System Image Build](#05-compilation--system-image-build)
+- [05. Compilation & System Image Build](#05-compilation--system-image-build)
   - [5.1. Configure Buildroot Environment](#51-configure-buildroot-environment)
-  - [5.2. Build Full System Image (build\_all)](#52-build-full-system-image-build_all)
+  - [5.2. Build Full System Image (build_all)](#52-build-full-system-image-build_all)
   - [5.3. Compile CVI TDL Samples](#53-compile-cvi-tdl-samples)
 - [06. System Image Deployment](#06-system-image-deployment)
   - [6.1. Flash the Image to the MicroSD Card](#61-flash-the-image-to-the-microsd-card)
@@ -41,10 +41,10 @@
   - [6.3. Identify the Board on the Network](#63-identify-the-board-on-the-network)
   - [6.4. Connect Through SSH](#64-connect-through-ssh)
 - [07. Current Development Scope](#07-current-development-scope)
-- [08. Software Architecture \& Thermal/Performance Optimization](#08-software-architecture--thermalperformance-optimization)
+- [08. Software Architecture & Thermal/Performance Optimization](#08-software-architecture--thermalperformance-optimization)
   - [8.1. Source File Responsibilities](#81-source-file-responsibilities)
-  - [8.2. Core Optimization Strategies for Low CPU Usage \& Heat Reduction](#82-core-optimization-strategies-for-low-cpu-usage--heat-reduction)
-- [09. References \& Repositories](#09-references--repositories)
+  - [8.2. Core Optimization Strategies for Low CPU Usage & Heat Reduction](#82-core-optimization-strategies-for-low-cpu-usage--heat-reduction)
+- [09. References & Repositories](#09-references--repositories)
 
 ---
 
@@ -69,34 +69,34 @@ The current work covers system configuration, image compilation, development too
 
 ### LicheeRV Nano — SG2002
 
-| Component | Specification | 
-| ----- | ----- | 
-| **SoC** | SOPHGO SG2002 | 
-| **Main core** | 1 GHz RISC-V C906 / ARM Cortex-A53 (selectable) | 
-| **Secondary core** | 700 MHz RISC-V C906 | 
-| **Low-power core** | 8051, 25–300 MHz | 
-| **Memory** | 2 Gbit (256 MB) DDR3 | 
-| **AI accelerator** | Integrated NPU — 1 TOPS INT8, BF16 support | 
-| **Storage** | TF card / SD NAND | 
-| **Video output** | 2-lane MIPI DSI, 31-pin interface | 
-| **Camera input** | 4-lane MIPI CSI, 22-pin interface | 
-| **Audio** | Onboard amplifier and analog microphone | 
-| **Wired network** | 100 Mbps Ethernet on E and WE variants | 
-| **Wireless network** | Dual-band Wi-Fi 6 and Bluetooth 5.4 on W and WE variants | 
-| **USB** | 1 × USB 2.0 OTG Type-C | 
-| **Expansion** | 2 × 14-pin, 2.54 mm headers | 
-| **Other interfaces** | RST and BOOT buttons, power and user LEDs | 
-| **Operating system** | Buildroot Linux / Debian | 
-| **Dimensions** | 22.86 × 35.56 mm | 
+| Component | Specification |
+|---|---|
+| **SoC** | SOPHGO SG2002 |
+| **Main core** | 1 GHz RISC-V C906 / ARM Cortex-A53 (selectable) |
+| **Secondary core** | 700 MHz RISC-V C906 |
+| **Low-power core** | 8051, 25–300 MHz |
+| **Memory** | 2 Gbit (256 MB) DDR3 |
+| **AI accelerator** | Integrated NPU — 1 TOPS INT8, BF16 support |
+| **Storage** | TF card / SD NAND |
+| **Video output** | 2-lane MIPI DSI, 31-pin interface |
+| **Camera input** | 4-lane MIPI CSI, 22-pin interface |
+| **Audio** | Onboard amplifier and analog microphone |
+| **Wired network** | 100 Mbps Ethernet on E and WE variants |
+| **Wireless network** | Dual-band Wi-Fi 6 and Bluetooth 5.4 on W and WE variants |
+| **USB** | 1 × USB 2.0 OTG Type-C |
+| **Expansion** | 2 × 14-pin, 2.54 mm headers |
+| **Other interfaces** | RST and BOOT buttons, power and user LEDs |
+| **Operating system** | Buildroot Linux / Debian |
+| **Dimensions** | 22.86 × 35.56 mm |
 
 ### Board Variants
 
-| Variant | Ethernet | Wi-Fi 6 | Bluetooth | 
-| ----- | ----- | ----- | ----- | 
-| **LicheeRV-Nano-B** | No | No | No | 
-| **LicheeRV-Nano-E** | Yes | No | No | 
-| **LicheeRV-Nano-W** | No | Yes | Yes | 
-| **LicheeRV-Nano-WE** | Yes | Yes | Yes | 
+| Variant | Ethernet | Wi-Fi 6 | Bluetooth |
+|---|---|---|---|
+| **LicheeRV-Nano-B** | No | No | No |
+| **LicheeRV-Nano-E** | Yes | No | No |
+| **LicheeRV-Nano-W** | No | Yes | Yes |
+| **LicheeRV-Nano-WE** | Yes | Yes | Yes |
 
 ### Hardware Diagrams & Visual References
 
@@ -201,13 +201,21 @@ git clone https://github.com/milkv-duo/cvitek-tdl-sdk-sg200x.git --depth=1
 
 **Directory requirement:** The CVI TDL repository must be located at `/workspace/cvitek-tdl-sdk-sg200x` inside the container.
 
-### 4.2. Clone CivetWeb
+### 4.2. Clone and Cross-Compile CivetWeb for RISC-V
 
-CivetWeb provides the embedded HTTP server dependency for the streaming application. Clone version `v1.15` inside `/workspace`:
+CivetWeb provides the embedded HTTP server static library (`libcivetweb.a`) required by the `http_streamer_tdl` application. Clone version `v1.15`, cross-compile it using the RISC-V toolchain, and install the library and headers directly into Buildroot's sysroot path:
 
 ```bash
 cd /workspace
 git clone --branch v1.15 --depth=1 https://github.com/civetweb/civetweb.git
+cd /workspace/civetweb
+export PATH="/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
+make clean
+make lib CC=riscv64-unknown-linux-musl-gcc
+mkdir -p /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/lib/
+mkdir -p /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/include/
+cp libcivetweb.a /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/lib/
+cp include/civetweb.h /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/include/
 ```
 
 ### 4.3. Application Directory Requirement
@@ -262,7 +270,7 @@ The relevant project directories inside the container are organized as follows:
 
 ## 05. Compilation & System Image Build
 
-Once all dependencies and custom application sources are present in `/workspace`, proceed with configuring Buildroot, compiling the system image, and then compiling the SDK samples.
+Once all dependencies, CivetWeb libraries, and custom application sources are present in `/workspace`, proceed with configuring Buildroot, compiling the system image, and then compiling the SDK samples.
 
 ### 5.1. Configure Buildroot Environment
 
@@ -277,7 +285,7 @@ git config --global --add safe.directory /workspace
 
 ### 5.2. Build Full System Image (build_all)
 
-Trigger the primary build process first. This step builds kernel headers, toolchains, and middleware libraries (including `cvi_comm_isp.h`) required by sample applications:
+Trigger the primary build process. This step builds kernel headers, toolchains, middleware libraries, and compiles custom applications located in `middleware/v2/sample/`:
 
 ```bash
 cd /workspace
@@ -288,7 +296,7 @@ build_all
 
 ### 5.3. Compile CVI TDL Samples
 
-Once `build_all` has successfully generated the required middleware and ISP header files, add the cross-compiler to `PATH` and compile the SDK samples:
+Once `build_all` has successfully generated the required middleware and system files, add the cross-compiler to `PATH` and compile the SDK samples:
 
 ```bash
 export PATH="/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
@@ -368,33 +376,34 @@ The streaming application (`http_streamer_tdl`) is engineered specifically for r
 
 ### 8.1. Source File Responsibilities
 
-| Module (`.c` / `.h`) | Primary Responsibility | Optimization Focus | 
-| ----- | ----- | ----- | 
-| `http_streamer_tdl` | Main entry point, signal handling, SDK hardware binding, thread lifecycle. | Clean subsystem tear-down and memory release. | 
-| `sensor_config` | Sensor initialization (`sensor_cfg.ini` parsing) and format negotiation. | Dynamic resolution setup matching hardware capability. | 
-| `vb_pool` | Allocation of hardware Video Buffer (VB) pools in DDR memory. | Zero-copy ISP/VPSS hardware buffer reuse across channels. | 
-| `vi_init` | Video Input (VI) pipeline setup for MIPI CSI capture. | Direct hardware DMA streaming from sensor to DDR. | 
-| `vpss_init` | Video Processing SubSystem configuration (scaling, pixel format conversion). | Dual-channel hardware scaling (1080p for stream, 640x480 for NPU). | 
-| `venc_handler` | H.264 encoding thread (`VENC`), NPU inference thread (`TDL`), and ring buffer. | Reusable memory ring buffer and NPU label overlay. | 
-| `fmp4_init_segment` | ISO/IEC 14496-12 MP4 container box builder (`ftyp`, `moov`, `moof`, `mdat`). | In-memory fast NAL unit Annex-B to AVCC conversion. | 
-| `mse_stream` | Media Source Extensions (MSE) HTTP chunked video streaming server handler. | Passive thread synchronization and static copy buffering. | 
-| `web_handler` | CivetWeb HTTP routes (`/`, `/stream`, `/stats`), HTML/JS web player interface. | Network socket I/O decoupled from mutex lock scopes. | 
+| Module (`.c` / `.h`) | Primary Responsibility | Optimization Focus |
+|---|---|---|
+| `http_streamer_tdl` | Main entry point, signal handling, SDK hardware binding, thread lifecycle. | Clean subsystem tear-down and memory release. |
+| `sensor_config` | Sensor initialization (`sensor_cfg.ini` parsing) and format negotiation. | Dynamic resolution setup matching hardware capability. |
+| `vb_pool` | Allocation of hardware Video Buffer (VB) pools in DDR memory. | Zero-copy ISP/VPSS hardware buffer reuse across channels. |
+| `vi_init` | Video Input (VI) pipeline setup for MIPI CSI capture. | Direct hardware DMA streaming from sensor to DDR. |
+| `vpss_init` | Video Processing SubSystem configuration (scaling, pixel format conversion). | Dual-channel hardware scaling (1080p for stream, 640x480 for NPU). |
+| `venc_handler` | H.264 encoding thread (`VENC`), NPU inference thread (`TDL`), and ring buffer. | Reusable memory ring buffer and NPU label overlay. |
+| `fmp4_init_segment` | ISO/IEC 14496-12 MP4 container box builder (`ftyp`, `moov`, `moof`, `mdat`). | In-memory fast NAL unit Annex-B to AVCC conversion. |
+| `mse_stream` | Media Source Extensions (MSE) HTTP chunked video streaming server handler. | Passive thread synchronization and static copy buffering. |
+| `web_handler` | CivetWeb HTTP routes (`/`, `/stream`, `/stats`), HTML/JS web player interface. | Network socket I/O decoupled from mutex lock scopes. |
 
 ---
 
 ### 8.2. Core Optimization Strategies for Low CPU Usage & Heat Reduction
 
 #### 1. Hardware Pipeline Offloading (Zero-CPU Video/AI Pipeline)
-
 Instead of processing frames in software via CPU routines:
-
 - **MIPI CSI Camera Capture (`VI`)** streams frames via DMA directly into hardware memory pools (`VB Pool`).
 - **Video Process SubSystem (`VPSS`)** splits the capture into two hardware streams: Channel 0 scales frames to 1080p for encoding, while Channel 1 scales frames to 640x480 for NPU inference.
 - **NPU Acceleration (`TPU / CVI_TDL`)** handles INT8 YOLOv8 tensor operations on dedicated silicon, leaving the RISC-V host CPU idling.
 - **Hardware Encoder (`VENC`)** compresses raw NV21 frames directly into H.264 streams in real-time.
 
-#### 2. Zero Per-Frame Heap Allocation (Persistent Dynamic Buffering)
+<p align="center">
+  <img src="images/Flowchart1.jpeg" alt="Diagrama de Flujo del Sistema" width="85%">
+</p>
 
+#### 2. Zero Per-Frame Heap Allocation (Persistent Dynamic Buffering)
 Executing `malloc()` and `free()` inside 30 FPS high-frequency loops causes kernel heap fragmentation, system calls overhead, thermal throttling, and CPU spikes.
 
 To eliminate this, `venc_handler.c` and `mse_stream.c` utilize **persistent capacity-expanding buffers**. Buffers expand only when encountering larger frame sizes and reuse memory indefinitely:
@@ -419,7 +428,6 @@ g_frame_ring[idx].size = total_size;
 ```
 
 #### 3. Passive Thread Synchronization (`pthread_cond_t` vs Polling)
-
 Polling loops with `usleep()` consume CPU cycles during sleep-wake transitions and introduce jitter.
 
 The streaming handlers (`mse_stream.c` and `web_handler.c`) utilize POSIX condition variables (`pthread_cond_timedwait`). When no new frame is ready, HTTP worker threads sleep passively with **0% CPU usage**, waking up instantly via `pthread_cond_broadcast()` when the `VENC` thread writes a new frame:
@@ -440,7 +448,6 @@ while (!g_bExit && (!g_frame_ring[next].data || next == g_frame_write_idx)) {
 ```
 
 #### 4. Mutex Decoupling from Network Socket I/O
-
 Performing slow blocking socket writes (`mg_write`) inside critical section locks causes thread starvation and blocks video capture pipelines.
 
 In `web_handler.c`, frame data is copied locally inside a fast mutex lock, and the lock is **released immediately prior to network transmission**:
@@ -460,29 +467,28 @@ int written = mg_write(conn, local_buf, size);
 ```
 
 #### 5. Efficient NPU Overlay & Label Mapping
-
 In `venc_handler.c`, the NPU inference thread (`run_tdl_thread`) processes detection outputs and maps integer COCO class IDs (`stObjMeta.info[i].classes`) directly to an array of static class strings (`COCO_CLASSES[cls]`) along with confidence percentage scores (`stObjMeta.info[i].bbox.score`). Hardware vector drawing routines (`CVI_TDL_Service_ObjectDrawRect`) overlay bounding boxes and English labels on video frames prior to H.264 compression, requiring zero client-side browser rendering computation.
 
 ---
 
 ## 09. References & Repositories
 
-1. **Sipeed LicheeRV Nano Official Documentation:**
+1. **Sipeed LicheeRV Nano Official Documentation:**  
    [Sipeed LicheeRV Nano Wiki - Overview](https://wiki.sipeed.com/hardware/en/lichee/RV_Nano/1_intro.html)
 
-2. **Habr Technical Article — LicheeRV Nano Testing & Development Workflow:**
+2. **Habr Technical Article — LicheeRV Nano Testing & Development Workflow:**  
    [LicheeRV Nano Development, Integration, and Hardware Tests](https://habr.com/ru/articles/880230/)
 
-3. **Sipeed LicheeRV-Nano-Build Repository:**
+3. **Sipeed LicheeRV-Nano-Build Repository:**  
    [Sipeed LicheeRV-Nano-Build GitHub](https://github.com/sipeed/LicheeRV-Nano-Build)
 
-4. **SOPHGO Host Tools Repository:**
+4. **SOPHGO Host Tools Repository:**  
    [SOPHGO Host Tools GitHub](https://github.com/sophgo/host-tools)
 
-5. **CVI TDL SDK for SG200X Repository:**
+5. **CVI TDL SDK for SG200X Repository:**  
    [Milk-V Duo CVITEK TDL SDK GitHub](https://github.com/milkv-duo/cvitek-tdl-sdk-sg200x)
 
-6. **CivetWeb Embedded HTTP Server Repository:**
+6. **CivetWeb Embedded HTTP Server Repository:**  
    [CivetWeb GitHub](https://github.com/civetweb/civetweb)
 
 ---

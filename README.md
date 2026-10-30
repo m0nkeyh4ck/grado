@@ -98,15 +98,13 @@ The current work covers system configuration, image compilation, development too
 
 ### Hardware Diagrams & Visual References
 
-| Board Setup & Camera | Pinout Diagram |
+| Board Variants & Physical Layout | Pinout Diagram |
 | :---: | :---: |
-| ![LicheeRV Nano Setup](images/licheerv_nano_hardware.jpg) | ![Pinout Diagram](images/licheerv_nano_pinout.jpg) |
+| ![Board Variants](images/img3.png) | ![Pinout Diagram](images/img4.png) |
 
-| Board Variants & Physical Layout | SG2002 Peripherals Diagram |
+| SG2002 System Architecture | SG2002 Subsystem Block Diagram |
 | :---: | :---: |
-| ![Board Layout](images/licheerv_nano_board_layout.png) | ![SG2002 Block Diagram](images/sg2002_block_diagram.jpg) |
-
-![SG2002 System Architecture](images/sg2002_architecture.jpg)
+| ![SG2002 Architecture](images/img1.png) | ![SG2002 Block Diagram](images/img2.png) |
 
 ---
 

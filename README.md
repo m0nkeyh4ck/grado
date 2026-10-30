@@ -100,15 +100,15 @@ The current work covers system configuration, image compilation, development too
 
 | Target Board & Camera Setup | Board Variants & Physical Layout |
 | :---: | :---: |
-| ![Target Board & Camera Setup](images/img5.jpeg) | ![Board Layout](images/img3.png) |
+| ![Target Board & Camera Setup](images/img5.jpeg) | ![Board Variants & Physical Layout](images/img3.png) |
 
 | Pinout Diagram | SG2002 Subsystem Block Diagram |
 | :---: | :---: |
-| ![Pinout Diagram](images/img4.jpg) | ![SG2002 Block Diagram](images/img2.jpg) |
+| ![Pinout Diagram](images/img4.png) | ![SG2002 Subsystem Block Diagram](images/img2.png) |
 
 | SG2002 System Architecture |
 | :---: |
-| ![SG2002 System Architecture](images/img1.jpg) |
+| ![SG2002 System Architecture](images/img1.png) |
 
 ---
 

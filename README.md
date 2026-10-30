@@ -206,14 +206,6 @@ CivetWeb provides the embedded HTTP server static library (`libcivetweb.a`) requ
 ```bash
 cd /workspace
 git clone --branch v1.15 --depth=1 https://github.com/civetweb/civetweb.git
-cd /workspace/civetweb
-export PATH="/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
-make clean
-make lib CC=riscv64-unknown-linux-musl-gcc
-mkdir -p /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/lib/
-mkdir -p /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/include/
-cp libcivetweb.a /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/lib/
-cp include/civetweb.h /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/include/
 ```
 
 ---

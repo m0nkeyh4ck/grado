@@ -4,14 +4,14 @@
 
 *Implementation and Optimization of a YOLO Model on the LicheeRV Nano (SG2002) Embedded Platform for Object Detection with Replicable Documentation in Educational Environments.*
 
-| Academic Information | Details | 
-| ----- | ----- | 
-| **Author** | Jesús Antonio López Trigozo | 
-| **Institution** | Universidad Nacional de Colombia | 
-| **Campus** | Bogotá | 
-| **Faculty** | Faculty of Engineering | 
-| **Advisor** | Carlos Iván Camargo Bareño | 
-| **Status** | 🟡 In Progress | 
+| Academic Information | Details |
+|---|---|
+| **Author** | Jesús Antonio López Trigozo |
+| **Institution** | Universidad Nacional de Colombia |
+| **Campus** | Bogotá |
+| **Faculty** | Faculty of Engineering |
+| **Advisor** | Carlos Iván Camargo Bareño |
+| **Status** | 🟡 In Progress |
 
 ---
 
@@ -68,45 +68,45 @@ The current work covers system configuration, image compilation, development too
 
 ### LicheeRV Nano — SG2002
 
-| Component | Specification | 
-| ----- | ----- | 
-| **SoC** | SOPHGO SG2002 | 
-| **Main core** | 1 GHz RISC-V C906 / ARM Cortex-A53 (selectable) | 
-| **Secondary core** | 700 MHz RISC-V C906 | 
-| **Low-power core** | 8051, 25–300 MHz | 
-| **Memory** | 2 Gbit (256 MB) DDR3 | 
-| **AI accelerator** | Integrated NPU — 1 TOPS INT8, BF16 support | 
-| **Storage** | TF card / SD NAND | 
-| **Video output** | 2-lane MIPI DSI, 31-pin interface | 
-| **Camera input** | 4-lane MIPI CSI, 22-pin interface | 
-| **Audio** | Onboard amplifier and analog microphone | 
-| **Wired network** | 100 Mbps Ethernet on E and WE variants | 
-| **Wireless network** | Dual-band Wi-Fi 6 and Bluetooth 5.4 on W and WE variants | 
-| **USB** | 1 × USB 2.0 OTG Type-C | 
-| **Expansion** | 2 × 14-pin, 2.54 mm headers | 
-| **Other interfaces** | RST and BOOT buttons, power and user LEDs | 
-| **Operating system** | Buildroot Linux / Debian | 
-| **Dimensions** | 22.86 × 35.56 mm | 
+| Component | Specification |
+|---|---|
+| **SoC** | SOPHGO SG2002 |
+| **Main core** | 1 GHz RISC-V C906 / ARM Cortex-A53 (selectable) |
+| **Secondary core** | 700 MHz RISC-V C906 |
+| **Low-power core** | 8051, 25–300 MHz |
+| **Memory** | 2 Gbit (256 MB) DDR3 |
+| **AI accelerator** | Integrated NPU — 1 TOPS INT8, BF16 support |
+| **Storage** | TF card / SD NAND |
+| **Video output** | 2-lane MIPI DSI, 31-pin interface |
+| **Camera input** | 4-lane MIPI CSI, 22-pin interface |
+| **Audio** | Onboard amplifier and analog microphone |
+| **Wired network** | 100 Mbps Ethernet on E and WE variants |
+| **Wireless network** | Dual-band Wi-Fi 6 and Bluetooth 5.4 on W and WE variants |
+| **USB** | 1 × USB 2.0 OTG Type-C |
+| **Expansion** | 2 × 14-pin, 2.54 mm headers |
+| **Other interfaces** | RST and BOOT buttons, power and user LEDs |
+| **Operating system** | Buildroot Linux / Debian |
+| **Dimensions** | 22.86 × 35.56 mm |
 
 ### Board Variants
 
-| Variant | Ethernet | Wi-Fi 6 | Bluetooth | 
-| ----- | ----- | ----- | ----- | 
-| **LicheeRV-Nano-B** | No | No | No | 
-| **LicheeRV-Nano-E** | Yes | No | No | 
-| **LicheeRV-Nano-W** | No | Yes | Yes | 
-| **LicheeRV-Nano-WE** | Yes | Yes | Yes | 
+| Variant | Ethernet | Wi-Fi 6 | Bluetooth |
+|---|---|---|---|
+| **LicheeRV-Nano-B** | No | No | No |
+| **LicheeRV-Nano-E** | Yes | No | No |
+| **LicheeRV-Nano-W** | No | Yes | Yes |
+| **LicheeRV-Nano-WE** | Yes | Yes | Yes |
 
 ### Hardware Diagrams & Visual References
 
 <table width="100%">
   <tr>
-    <th width="50%" align="center">Target Board & Camera Setup</th>
+    <th width="50%" align="center">Board & Camera Setup</th>
     <th width="50%" align="center">Pinout Diagram</th>
   </tr>
   <tr>
     <td align="center" valign="middle">
-      <img src="images/img5.jpeg" alt="Target Board & Camera Setup" width="100%">
+      <img src="images/img5.jpeg" alt="Board & Camera Setup" width="100%">
     </td>
     <td align="center" valign="middle">
       <img src="images/img4.png" alt="Pinout Diagram" width="100%">
@@ -211,7 +211,7 @@ cd cvitek-tdl-sdk-sg200x/sample
 
 ## 05. CivetWeb & Application Build Setup
 
-CivetWeb provides the embedded HTTP server dependency for the `http_streamet_tdl` streaming application.
+CivetWeb provides the embedded HTTP server dependency for the `http_streamer_tdl` streaming application.
 
 ### 5.1. Clone CivetWeb
 
@@ -227,7 +227,7 @@ git clone --branch v1.15 --depth=1 https://github.com/civetweb/civetweb.git
 To ensure proper cross-compilation against the build system libraries, all application source files (`.c`, `.h`, and `Makefile`) **must be placed inside the container** at the following exact path:
 
 ```text
-/workspace/middleware/v2/sample/http_streamet_tdl/
+/workspace/middleware/v2/sample/http_streamer_tdl/
 ```
 
 > **Note:** `/workspace` in the container corresponds to the local `LicheeRV-Nano-Build` repository root directory on the host machine.
@@ -249,7 +249,7 @@ The relevant project directories inside the container are organized as follows:
 └── middleware/
     └── v2/
         └── sample/
-            └── http_streamet_tdl/
+            └── http_streamer_tdl/
                 ├── fmp4_init_segment.c
                 ├── fmp4_init_segment.h
                 ├── http_streamer_tdl.c
@@ -280,7 +280,7 @@ CIVETWEB_SOURCE := $(CIVETWEB_DIR)/src/civetweb.c
 CIVETWEB_INCLUDE_DIR := $(CIVETWEB_DIR)/include
 ```
 
-**Note:** Cloning CivetWeb provides its source code; it does not, by itself, compile or deploy the HTTP streaming application to the board. The application must still be built with the appropriate RISC-V cross-compiler and SDK libraries inside the `/workspace/middleware/v2/sample/http_streamet_tdl` directory.
+**Note:** Cloning CivetWeb provides its source code; it does not, by itself, compile or deploy the HTTP streaming application to the board. The application must still be built with the appropriate RISC-V cross-compiler and SDK libraries inside the `/workspace/middleware/v2/sample/http_streamer_tdl` directory.
 
 ---
 
@@ -350,30 +350,28 @@ YOLO deployment, inference validation, and performance evaluation remain part of
 
 ## 08. Software Architecture & Thermal/Performance Optimization
 
-The streaming application (`http_streamet_tdl`) is engineered specifically for resource-constrained SoC environments (SOPHGO SG2002 / CV181X). High performance, stable FPS, low CPU utilization, and minimal thermal dissipation are achieved through strict C-level design pattern optimizations.
+The streaming application (`http_streamer_tdl`) is engineered specifically for resource-constrained SoC environments (SOPHGO SG2002 / CV181X). High performance, stable FPS, low CPU utilization, and minimal thermal dissipation are achieved through strict C-level design pattern optimizations.
 
 ### 8.1. Source File Responsibilities
 
-| Module (`.c` / `.h`) | Primary Responsibility | Optimization Focus | 
-| ----- | ----- | ----- | 
-| `http_streamer_tdl` | Main entry point, signal handling, SDK hardware binding, thread lifecycle. | Clean subsystem tear-down and memory release. | 
-| `sensor_config` | Sensor initialization (`sensor_cfg.ini` parsing) and format negotiation. | Dynamic resolution setup matching hardware capability. | 
-| `vb_pool` | Allocation of hardware Video Buffer (VB) pools in DDR memory. | Zero-copy ISP/VPSS hardware buffer reuse across channels. | 
-| `vi_init` | Video Input (VI) pipeline setup for MIPI CSI capture. | Direct hardware DMA streaming from sensor to DDR. | 
-| `vpss_init` | Video Processing SubSystem configuration (scaling, pixel format conversion). | Dual-channel hardware scaling (1080p for stream, 640x480 for NPU). | 
-| `venc_handler` | H.264 encoding thread (`VENC`), NPU inference thread (`TDL`), and ring buffer. | Reusable memory ring buffer and NPU label overlay. | 
-| `fmp4_init_segment` | ISO/IEC 14496-12 MP4 container box builder (`ftyp`, `moov`, `moof`, `mdat`). | In-memory fast NAL unit Annex-B to AVCC conversion. | 
-| `mse_stream` | Media Source Extensions (MSE) HTTP chunked video streaming server handler. | Passive thread synchronization and static copy buffering. | 
-| `web_handler` | CivetWeb HTTP routes (`/`, `/stream`, `/stats`), HTML/JS web player interface. | Network socket I/O decoupled from mutex lock scopes. | 
+| Module (`.c` / `.h`) | Primary Responsibility | Optimization Focus |
+|---|---|---|
+| `http_streamer_tdl` | Main entry point, signal handling, SDK hardware binding, thread lifecycle. | Clean subsystem tear-down and memory release. |
+| `sensor_config` | Sensor initialization (`sensor_cfg.ini` parsing) and format negotiation. | Dynamic resolution setup matching hardware capability. |
+| `vb_pool` | Allocation of hardware Video Buffer (VB) pools in DDR memory. | Zero-copy ISP/VPSS hardware buffer reuse across channels. |
+| `vi_init` | Video Input (VI) pipeline setup for MIPI CSI capture. | Direct hardware DMA streaming from sensor to DDR. |
+| `vpss_init` | Video Processing SubSystem configuration (scaling, pixel format conversion). | Dual-channel hardware scaling (1080p for stream, 640x480 for NPU). |
+| `venc_handler` | H.264 encoding thread (`VENC`), NPU inference thread (`TDL`), and ring buffer. | Reusable memory ring buffer and NPU label overlay. |
+| `fmp4_init_segment` | ISO/IEC 14496-12 MP4 container box builder (`ftyp`, `moov`, `moof`, `mdat`). | In-memory fast NAL unit Annex-B to AVCC conversion. |
+| `mse_stream` | Media Source Extensions (MSE) HTTP chunked video streaming server handler. | Passive thread synchronization and static copy buffering. |
+| `web_handler` | CivetWeb HTTP routes (`/`, `/stream`, `/stats`), HTML/JS web player interface. | Network socket I/O decoupled from mutex lock scopes. |
 
 ---
 
 ### 8.2. Core Optimization Strategies for Low CPU Usage & Heat Reduction
 
 #### 1. Hardware Pipeline Offloading (Zero-CPU Video/AI Pipeline)
-
 Instead of processing frames in software via CPU routines:
-
 - **MIPI CSI Camera Capture (`VI`)** streams frames via DMA directly into hardware memory pools (`VB Pool`).
 - **Video Process SubSystem (`VPSS`)** splits the capture into two hardware streams: Channel 0 scales frames to 1080p for encoding, while Channel 1 scales frames to 640x480 for NPU inference.
 - **NPU Acceleration (`TPU / CVI_TDL`)** handles INT8 YOLOv8 tensor operations on dedicated silicon, leaving the RISC-V host CPU idling.
@@ -384,7 +382,6 @@ Instead of processing frames in software via CPU routines:
 </p>
 
 #### 2. Zero Per-Frame Heap Allocation (Persistent Dynamic Buffering)
-
 Executing `malloc()` and `free()` inside 30 FPS high-frequency loops causes kernel heap fragmentation, system calls overhead, thermal throttling, and CPU spikes.
 
 To eliminate this, `venc_handler.c` and `mse_stream.c` utilize **persistent capacity-expanding buffers**. Buffers expand only when encountering larger frame sizes and reuse memory indefinitely:
@@ -409,7 +406,6 @@ g_frame_ring[idx].size = total_size;
 ```
 
 #### 3. Passive Thread Synchronization (`pthread_cond_t` vs Polling)
-
 Polling loops with `usleep()` consume CPU cycles during sleep-wake transitions and introduce jitter.
 
 The streaming handlers (`mse_stream.c` and `web_handler.c`) utilize POSIX condition variables (`pthread_cond_timedwait`). When no new frame is ready, HTTP worker threads sleep passively with **0% CPU usage**, waking up instantly via `pthread_cond_broadcast()` when the `VENC` thread writes a new frame:
@@ -430,7 +426,6 @@ while (!g_bExit && (!g_frame_ring[next].data || next == g_frame_write_idx)) {
 ```
 
 #### 4. Mutex Decoupling from Network Socket I/O
-
 Performing slow blocking socket writes (`mg_write`) inside critical section locks causes thread starvation and blocks video capture pipelines.
 
 In `web_handler.c`, frame data is copied locally inside a fast mutex lock, and the lock is **released immediately prior to network transmission**:
@@ -450,7 +445,6 @@ int written = mg_write(conn, local_buf, size);
 ```
 
 #### 5. Efficient NPU Overlay & Label Mapping
-
 In `venc_handler.c`, the NPU inference thread (`run_tdl_thread`) processes detection outputs and maps integer COCO class IDs (`stObjMeta.info[i].classes`) directly to an array of static class strings (`COCO_CLASSES[cls]`) along with confidence percentage scores (`stObjMeta.info[i].bbox.score`). Hardware vector drawing routines (`CVI_TDL_Service_ObjectDrawRect`) overlay bounding boxes and English labels on video frames prior to H.264 compression, requiring zero client-side browser rendering computation.
 
 ---

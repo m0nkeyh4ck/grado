@@ -416,13 +416,25 @@ In `venc_handler.c`, the NPU inference thread (`run_tdl_thread`) processes detec
 
 ---
 
-## 09. References
+## 09. References & Repositories
 
 1. **Sipeed LicheeRV Nano Official Documentation:**  
    [Sipeed LicheeRV Nano Wiki - Overview](https://wiki.sipeed.com/hardware/en/lichee/RV_Nano/1_intro.html)
 
 2. **Habr Technical Article — LicheeRV Nano Testing & Development Workflow:**  
    [LicheeRV Nano Development, Integration, and Hardware Tests](https://habr.com/ru/articles/880230/)
+
+3. **Sipeed LicheeRV-Nano-Build Repository:**  
+   [Sipeed LicheeRV-Nano-Build GitHub](https://github.com/sipeed/LicheeRV-Nano-Build)
+
+4. **SOPHGO Host Tools Repository:**  
+   [SOPHGO Host Tools GitHub](https://github.com/sophgo/host-tools)
+
+5. **CVI TDL SDK for SG200X Repository:**  
+   [Milk-V Duo CVITEK TDL SDK GitHub](https://github.com/milkv-duo/cvitek-tdl-sdk-sg200x)
+
+6. **CivetWeb Embedded HTTP Server Repository:**  
+   [CivetWeb GitHub](https://github.com/civetweb/civetweb)
 
 ---
 

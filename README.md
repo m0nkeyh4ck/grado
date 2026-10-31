@@ -34,10 +34,9 @@
   - [5.4. Deploy and Compile Application (http_streamer_tdl)](#54-deploy-and-compile-application-http_streamer_tdl)
   - [5.5. Container Directory Structure](#55-container-directory-structure)
 - [06. System Image Deployment](#06-system-image-deployment)
-  - [6.1. Flash the Image to the MicroSD Card](#61-flash-the-image-to-the-microsd-card)
-  - [6.2. Configure Wi-Fi](#62-configure-wi-fi)
-  - [6.3. Identify the Board on the Network](#63-identify-the-board-on-the-network)
-  - [6.4. Connect Through SSH](#64-connect-through-ssh)
+  - [6.1. Flash Image & Automated Wi-Fi Setup Script](#61-flash-image--automated-wi-fi-setup-script)
+  - [6.2. Identify the Board on the Network](#62-identify-the-board-on-the-network)
+  - [6.3. Connect Through SSH](#63-connect-through-ssh)
 - [07. Current Development Scope](#07-current-development-scope)
 - [08. Software Architecture & Thermal/Performance Optimization](#08-software-architecture--thermalperformance-optimization)
   - [8.1. Source File Responsibilities](#81-source-file-responsibilities)
@@ -311,34 +310,66 @@ The complete project directory tree inside the container is organized as follows
 
 ## 06. System Image Deployment
 
-### 6.1. Flash the Image to the MicroSD Card
+### 6.1. Flash Image & Automated Wi-Fi Setup Script
 
-A **MicroSD card of 8 GB or larger** (Class 10 or UHS-I recommended) is required to hold the Linux system partitions and application binaries. Write the compiled image generated in step 5.2 to the MicroSD card:
+To streamline the deployment process on the **W and WE variants**, you can use the following automated Bash script on your host machine.
+
+This script unmounts existing target card partitions, writes the compiled system image using `dd`, mounts the system root partition (`rootfs`), writes the Wi-Fi credentials to `/etc/wpa_supplicant/wpa_supplicant.conf`, and configures clean automatic network start commands inside `/etc/init.d/rcS` to avoid socket conflict issues upon boot.
+
+Save the code as `flash_sd.sh`, replace the image filename and Wi-Fi placeholders with your generated image and network credentials, grant execution permissions (`chmod +x flash_sd.sh`), and run it:
 
 ```bash
-sudo dd if=/workspace/install/soc_sg2002_licheervnano_sd/images/<YOUR_IMAGE_NAME>.img of=/dev/sdX bs=16M status=progress conv=fdatasync
-```
+#!/bin/bash
+# Script to flash the SD card and configure Wi-Fi / clean startup on LicheeRV Nano
 
-Replace `<YOUR_IMAGE_NAME>.img` with the actual image filename generated during `build_all` and `/dev/sdX` with the MicroSD card identifier.
+IMG="YOUR_IMAGE_NAME.img"
+DEVICE="/dev/sda"
+MOUNT_DIR="/mnt/sd_rootfs"
 
-> **Important:** The image path and the MicroSD device path depend on where the flashing command is executed. Verify the target device before running `dd`, as selecting the wrong device can overwrite data on another disk.
+echo "=== 1. Unmounting target device partitions ==="
+sudo umount ${DEVICE}* 2>/dev/null
 
-### 6.2. Configure Wi-Fi
+echo "=== 2. Flashing image with dd ==="
+sudo dd if="$IMG" of="$DEVICE" bs=4M status=progress conv=fsync
+sync
 
-For the **W and WE variants**, mount the `rootfs` partition of the SD card and create or edit `/etc/wpa_supplicant.conf`:
+echo "=== 3. Mounting rootfs partition ==="
+sudo mkdir -p "$MOUNT_DIR"
+sudo mount "${DEVICE}2" "$MOUNT_DIR"
 
-```text
+echo "=== 4. Writing Wi-Fi configuration ==="
+sudo mkdir -p "$MOUNT_DIR/etc/wpa_supplicant"
+sudo bash -c "cat > $MOUNT_DIR/etc/wpa_supplicant/wpa_supplicant.conf" << 'EOF'
 ctrl_interface=/var/run/wpa_supplicant
 ap_scan=1
 network={
-    ssid="YOUR_WIFI_SSID"
-    psk="YOUR_WIFI_PASSWORD"
+  ssid="YOUR_WIFI_SSID"
+  psk="YOUR_WIFI_PASSWORD"
+  scan_ssid=1
 }
+EOF
+
+echo "=== 5. Configuring clean automatic startup in rcS ==="
+if [ -f "$MOUNT_DIR/etc/init.d/rcS" ]; then
+    # Clean stale sockets, bring up wlan0, start wpa_supplicant, and request DHCP lease
+    sudo bash -c "echo 'rm -rf /var/run/wpa_supplicant' >> $MOUNT_DIR/etc/init.d/rcS"
+    sudo bash -c "echo 'ip link set wlan0 up' >> $MOUNT_DIR/etc/init.d/rcS"
+    sudo bash -c "echo 'wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf' >> $MOUNT_DIR/etc/init.d/rcS"
+    sudo bash -c "echo 'sleep 4' >> $MOUNT_DIR/etc/init.d/rcS"
+    sudo bash -c "echo 'udhcpc -i wlan0 -b' >> $MOUNT_DIR/etc/init.d/rcS"
+fi
+
+echo "=== 6. Syncing data buffers and unmounting ==="
+sync
+sudo umount "$MOUNT_DIR"
+sudo rm -rf "$MOUNT_DIR"
+
+echo "=== DONE! MicroSD image flashed and auto Wi-Fi startup configured. ==="
 ```
 
-Replace the placeholder values with the credentials of your wireless network.
+> **Important:** Ensure you replace `YOUR_IMAGE_NAME.img` with the actual filename generated during compilation (e.g., `2026-10-31-01-07-d4003f.img`), and replace `YOUR_WIFI_SSID` / `YOUR_WIFI_PASSWORD` with your target Wi-Fi network credentials before executing the script. Also verify that `DEVICE` matches your MicroSD card identifier on the host system.
 
-### 6.3. Identify the Board on the Network
+### 6.2. Identify the Board on the Network
 
 After inserting the MicroSD card and powering on the board, identify its IP address on the local network using `nmap`:
 
@@ -346,7 +377,7 @@ After inserting the MicroSD card and powering on the board, identify its IP addr
 sudo nmap -sV -p 22 192.168.1.0/24
 ```
 
-### 6.4. Connect Through SSH
+### 6.3. Connect Through SSH
 
 Connect to the board using the default root account:
 

@@ -13,8 +13,6 @@
 | **Advisor** | Carlos Iván Camargo Bareño | 
 | **Status** | 🟡 In Progress | 
 
----
-
 ## Table of Contents
 
 - [01. Project Overview](#01-project-overview)
@@ -252,7 +250,14 @@ cd /workspace/civetweb && make WITH_CPP=0 WITH_LUA=0 WITH_IPV6=1 COMS_CFLAGS="-O
 
 ### 5.4. Deploy and Compile Application (http_streamer_tdl)
 
-Now that all base system headers (`cvi_comm_isp.h`, `cvi_comm_gdc.h`), sysroot libraries (`libcivetweb.a`), and CVI TDL binaries are built and ready, place the `http_streamer_tdl` project directory inside the container at `/workspace/middleware/v2/sample/http_streamer_tdl/` and compile it:
+Clone the streaming application repository into a temporary directory, move only the `http_streamer_tdl` project folder into the Buildroot middleware path, and clean up the temporary repository:
+
+```bash
+git clone https://github.com/m0nkeyh4ck/licheerv-nano-sg2002-yolo-streaming /tmp/repo
+mv /tmp/repo/http_streamer_tdl /workspace/middleware/v2/sample/ && rm -rf /tmp/repo
+```
+
+Now navigate to the application directory and compile it:
 
 ```bash
 cd /workspace/middleware/v2/sample/http_streamer_tdl

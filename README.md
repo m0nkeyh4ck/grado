@@ -31,19 +31,14 @@
   - [5.1. Configure Buildroot Environment](#51-configure-buildroot-environment)
   - [5.2. Build Base System Image (build_all)](#52-build-base-system-image-build_all)
   - [5.3. Cross-Compile and Install CivetWeb Library](#53-cross-compile-and-install-civetweb-library)
-  - [5.4. Deploy and Compile Application (http_streamer_tdl)](#54-deploy-and-compile-application-http_streamer_tdl)
-  - [5.5. Clone YOLOv8 Model Repository](#55-clone-yolov8-model-repository)
+  - [5.4. Deploy Application & Helper Scripts](#54-deploy-application--helper-scripts)
+  - [5.5. Download YOLOv8 CVIMODEL Repository](#55-download-yolov8-cvimodel-repository)
   - [5.6. Container Directory Structure](#56-container-directory-structure)
 - [06. System Image Deployment](#06-system-image-deployment)
-  - [6.1. Collect Dynamic Shared Libraries](#61-collect-dynamic-shared-libraries)
-  - [6.2. Flash Base Image to MicroSD Card](#62-flash-base-image-to-microsd-card)
-  - [6.3. Mount Target Rootfs Partition](#63-mount-target-rootfs-partition)
-  - [6.4. Stage Binary, Model, and Dynamic Libraries](#64-stage-binary-model-and-dynamic-libraries)
-  - [6.5. Configure System Library Path (LD_LIBRARY_PATH)](#65-configure-system-library-path-ld_library_path)
-  - [6.6. Configure Wireless Network & Auto-Startup Script](#66-configure-wireless-network--auto-startup-script)
-  - [6.7. Flush Buffers and Safely Unmount Card](#67-flush-buffers-and-safely-unmount-card)
-  - [6.8. Identify Board IP Address on Network](#68-identify-board-ip-address-on-network)
-  - [6.9. Connect Through SSH & Verify Deployment](#69-connect-through-ssh--verify-deployment)
+  - [6.1. Host Dependency Collection (collect_libraries.sh)](#61-host-dependency-collection-collect_librariessh)
+  - [6.2. Flash Image, Stage Assets & Automated Wi-Fi Setup (flash_sd.sh)](#62-flash-image-stage-assets--automated-wi-fi-setup-flash_sdsh)
+  - [6.3. Identify the Board on the Network](#63-identify-the-board-on-the-network)
+  - [6.4. Connect Through SSH](#64-connect-through-ssh)
 - [07. Current Development Scope](#07-current-development-scope)
 - [08. Software Architecture & Thermal/Performance Optimization](#08-software-architecture--thermalperformance-optimization)
   - [8.1. Source File Responsibilities](#81-source-file-responsibilities)
@@ -103,47 +98,6 @@ The current work covers system configuration, image compilation, development too
 | **LicheeRV-Nano-WE** | Yes | Yes | Yes |
 
 ### Hardware Diagrams & Visual References
-
-<table width="100%">
-  <tr>
-    <th width="50%" align="center">Target Board & Camera Setup</th>
-    <th width="50%" align="center">Pinout Diagram</th>
-  </tr>
-  <tr>
-    <td align="center" valign="middle">
-      <img src="images/img5.jpeg" alt="Target Board & Camera Setup" width="100%">
-    </td>
-    <td align="center" valign="middle">
-      <img src="images/img4.png" alt="Pinout Diagram" width="100%">
-    </td>
-  </tr>
-</table>
-
-<table width="100%">
-  <tr>
-    <th align="center">Board Variants & Physical Layout</th>
-  </tr>
-  <tr>
-    <td align="center" valign="middle">
-      <img src="images/img3.png" alt="Board Variants & Physical Layout" width="100%">
-    </td>
-  </tr>
-</table>
-
-<table width="100%">
-  <tr>
-    <th width="50%" align="center">SG2002 Subsystem Block Diagram</th>
-    <th width="50%" align="center">SG2002 System Architecture</th>
-  </tr>
-  <tr>
-    <td align="center" valign="middle">
-      <img src="images/img2.png" alt="SG2002 Subsystem Block Diagram" width="100%">
-    </td>
-    <td align="center" valign="middle">
-      <img src="images/img1.png" alt="SG2002 System Architecture" width="100%">
-    </td>
-  </tr>
-</table>
 
 ---
 
@@ -254,13 +208,15 @@ To prevent compilation errors caused by missing CivetWeb headers or static libra
 cd /workspace/civetweb && make WITH_CPP=0 WITH_LUA=0 WITH_IPV6=1 COMS_CFLAGS="-O2" CC=/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin/riscv64-unknown-linux-musl-gcc AR=/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin/riscv64-unknown-linux-musl-ar lib && cp libcivetweb.a /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/lib/ && cp include/civetweb.h /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/include/
 ```
 
-### 5.4. Deploy and Compile Application (http_streamer_tdl)
+### 5.4. Deploy Application & Helper Scripts
 
-Clone the streaming application repository into a temporary directory, move only the `http_streamer_tdl` project folder into the Buildroot middleware path, and clean up the temporary repository:
+Clone the thesis streaming application repository into a temporary directory. Move the `http_streamer_tdl` project folder into the Buildroot middleware path, copy the deployment helper scripts (`collect_libraries.sh` and `flash_sd.sh`) into `/workspace`, and remove temporary files:
 
 ```bash
 git clone https://github.com/m0nkeyh4ck/licheerv-nano-sg2002-yolo-streaming /tmp/repo
-mv /tmp/repo/http_streamer_tdl /workspace/middleware/v2/sample/ && rm -rf /tmp/repo
+mv /tmp/repo/http_streamer_tdl /workspace/middleware/v2/sample/
+cp /tmp/repo/*.sh /workspace/ 2>/dev/null || true
+rm -rf /tmp/repo
 ```
 
 Now navigate to the application directory and compile it:
@@ -271,7 +227,7 @@ make clean
 make
 ```
 
-### 5.5. Clone YOLOv8 Model Repository
+### 5.5. Download YOLOv8 CVIMODEL Repository
 
 Inside the container's `/workspace` directory, clone the repository containing the pre-compiled INT8 YOLOv8 model file (`yolov8n_cv181x_int8_sym.cvimodel`):
 
@@ -297,6 +253,8 @@ The complete project directory tree inside the container is organized as follows
 │   │   └── civetweb.h
 │   └── src/
 │       └── civetweb.c
+├── collect_libraries.sh
+├── flash_sd.sh
 ├── cvitek-tdl-sdk-sg200x/
 ├── middleware/
 │   └── v2/
@@ -329,159 +287,71 @@ The complete project directory tree inside the container is organized as follows
 
 ## 06. System Image Deployment
 
-> **Execution Context Note:** All steps in Section 06 are performed **on the host machine (outside the Docker container)**. Exit the container (`exit`) or open a new host terminal. Direct host OS privileges are required to access physical block devices (`/dev/sdX`), mount SD card partitions, scan local network ranges, and initiate SSH sessions.
+> **Execution Context Note:** All steps in Section 06 are performed **on the host machine (outside the Docker container)**. Exit the container (`exit`) or open a new host terminal. Direct host OS privileges are required to access physical block devices (`/dev/sdX`), mount SD card partitions, scan local network ranges, and initiate SSH sessions. Because `/workspace` inside the container maps directly to `/root/LicheeRV-Nano-Build` on the host, all cloned scripts (`collect_libraries.sh` and `flash_sd.sh`) are already available in your host working directory.
 
-### 6.1. Collect Dynamic Shared Libraries
+### 6.1. Host Dependency Collection (collect_libraries.sh)
 
-Before writing the system to the MicroSD card, gather all dynamic shared libraries (`.so`) required by OpenCV, TPU, and CVI TDL SDK into a single flat directory (`/root/LicheeRV-Nano-Build/libraries`). 
+Before flashing the system image, execute the `collect_libraries.sh` script located in the root repository. This script automatically scans and extracts all required dynamic shared libraries (`.so`) from Buildroot, CVI TDL SDK, TPU, and OpenCV directories, placing them into a flat directory structure (`/root/LicheeRV-Nano-Build/libraries`).
 
-Run `collect_libraries.sh` on your host machine:
+Run the script from your **host machine**:
 
 ```bash
 cd /root/LicheeRV-Nano-Build
-
-cat << 'EOF' > collect_libraries.sh
-#!/bin/bash
-BASE="/root/LicheeRV-Nano-Build"
-DEST="/root/LicheeRV-Nano-Build/libraries"
-
-rm -rf "$DEST"
-mkdir -p "$DEST"
-
-echo "Extracting dynamic libraries into flat structure..."
-find "$BASE/install/soc_sg2002_licheervnano_sd/rootfs/mnt/system/usr/lib" -type f -name '*.so*' -exec cp -n -t "$DEST" {} +
-find "$BASE/install/soc_sg2002_licheervnano_sd/rootfs/mnt/system/usr/lib/3rd" -type f -name '*.so*' -exec cp -n -t "$DEST" {} +
-find "$BASE/cvitek-tdl-sdk-sg200x/lib" -type f -name '*.so*' -exec cp -n -t "$DEST" {} +
-find "$BASE/cvitek-tdl-sdk-sg200x/sample/3rd/tpu/lib" -type f -name '*.so*' -exec cp -n -t "$DEST" {} +
-find "$BASE/cvitek-tdl-sdk-sg200x/sample/3rd/opencv/lib" -type f -name '*.so*' -exec cp -n -t "$DEST" {} +
-
-cd "$DEST"
-for lib in libopencv_core libopencv_imgproc libopencv_imgcodecs; do
-    if [ -f "${lib}.so.3.2.0" ] && [ ! -e "${lib}.so.3.2" ]; then
-        ln -s "${lib}.so.3.2.0" "${lib}.so.3.2"
-    fi
-done
-cd - > /dev/null
-echo "Library collection completed at: $DEST"
-EOF
-
 chmod +x collect_libraries.sh
 ./collect_libraries.sh
 ```
 
-### 6.2. Flash Base Image to MicroSD Card
+### 6.2. Flash Image, Stage Assets & Automated Wi-Fi Setup (flash_sd.sh)
 
-Unmount any active partitions on the target SD card device (e.g., `/dev/sda`) and write the compiled system image using `dd`:
+The `flash_sd.sh` script automates the complete SD card deployment. It writes the compiled image, mounts the `rootfs` partition, stages the application binary (`http_streamer_tdl`), YOLO model (`yolov8n_cv181x_int8_sym.cvimodel`), and dynamic libraries (`libraries/`) into `/root`, and configures the system `LD_LIBRARY_PATH` alongside automatic Wi-Fi credentials.
 
-```bash
-# Unmount target block device partitions
-sudo umount /dev/sda* 2>/dev/null
+> **IMPORTANT CONFIGURATION BEFORE EXECUTION:**
+>
+> Edit `flash_sd.sh` on your host machine to set your specific target parameters:
+> - `IMG`: Full path to your generated `.img` file.
+> - `DEVICE`: Target MicroSD card block device (e.g., `/dev/sda` or `/dev/mmcblk0`).
+> - `YOUR_WIFI_SSID` & `YOUR_WIFI_PASSWORD`: Your wireless network credentials.
 
-# Flash image to the SD card (Replace image name with your compiled output)
-IMG_PATH="/root/LicheeRV-Nano-Build/install/soc_sg2002_licheervnano_sd/images/YOUR_IMAGE_NAME.img"
-sudo dd if="$IMG_PATH" of=/dev/sda bs=4M status=progress conv=fsync
-sync
-```
-
-### 6.3. Mount Target Rootfs Partition
-
-Create a mount mountpoint on the host OS and mount the second partition (`rootfs`) of the MicroSD card:
+Open and edit the script on the host machine:
 
 ```bash
-sudo mkdir -p /mnt/sd_rootfs
-sudo mount /dev/sda2 /mnt/sd_rootfs
+nano /root/LicheeRV-Nano-Build/flash_sd.sh
 ```
 
-### 6.4. Stage Binary, Model, and Dynamic Libraries
-
-Copy the compiled application binary, the YOLO model file, and the collected dynamic libraries directly into the `/root` folder of the MicroSD card:
+Grant execution permissions and run the deployment script on your **host machine**:
 
 ```bash
-# Copy executable binary and set execution permissions
-sudo cp /root/LicheeRV-Nano-Build/middleware/v2/sample/http_streamer_tdl/http_streamer_tdl /mnt/sd_rootfs/root/
-sudo chmod +x /mnt/sd_rootfs/root/http_streamer_tdl
-
-# Copy INT8 YOLOv8 model file
-sudo cp /root/LicheeRV-Nano-Build/YOLOv8-Object-Detection/yolov8n_cv181x_int8_sym.cvimodel /mnt/sd_rootfs/root/
-
-# Copy dynamic libraries folder
-sudo cp -r /root/LicheeRV-Nano-Build/libraries /mnt/sd_rootfs/root/
+cd /root/LicheeRV-Nano-Build
+chmod +x flash_sd.sh
+./flash_sd.sh
 ```
 
-### 6.5. Configure System Library Path (LD_LIBRARY_PATH)
+### 6.3. Identify the Board on the Network
 
-Configure the dynamic linker path inside `/etc/profile` so the system automatically finds shared libraries located in `/root/libraries`:
-
-```bash
-sudo bash -c "echo 'export LD_LIBRARY_PATH=\"/root/libraries:/usr/lib:/usr/local/lib:\$LD_LIBRARY_PATH\"' >> /mnt/sd_rootfs/etc/profile"
-```
-
-### 6.6. Configure Wireless Network & Auto-Startup Script
-
-Write your wireless router credentials to `wpa_supplicant.conf` and update `/etc/init.d/rcS` to enable automatic network initialization on boot:
-
-```bash
-# Write Wi-Fi credentials
-sudo mkdir -p /mnt/sd_rootfs/etc/wpa_supplicant
-sudo bash -c "cat > /mnt/sd_rootfs/etc/wpa_supplicant/wpa_supplicant.conf" << 'EOF'
-ctrl_interface=/var/run/wpa_supplicant
-ap_scan=1
-network={
-  ssid="YOUR_WIFI_SSID"
-  psk="YOUR_WIFI_PASSWORD"
-  scan_ssid=1
-}
-EOF
-
-# Append startup network routine to rcS
-sudo bash -c "echo 'export LD_LIBRARY_PATH=\"/root/libraries:/usr/lib:/usr/local/lib:\$LD_LIBRARY_PATH\"' >> /mnt/sd_rootfs/etc/init.d/rcS"
-sudo bash -c "echo 'rm -rf /var/run/wpa_supplicant' >> /mnt/sd_rootfs/etc/init.d/rcS"
-sudo bash -c "echo 'ip link set wlan0 up' >> /mnt/sd_rootfs/etc/init.d/rcS"
-sudo bash -c "echo 'wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf' >> /mnt/sd_rootfs/etc/init.d/rcS"
-sudo bash -c "echo 'sleep 4' >> /mnt/sd_rootfs/etc/init.d/rcS"
-sudo bash -c "echo 'udhcpc -i wlan0 -b' >> /mnt/sd_rootfs/etc/init.d/rcS"
-```
-
-### 6.7. Flush Buffers and Safely Unmount Card
-
-Synchronize file system caches and safely unmount the partition:
-
-```bash
-sync
-sudo umount /mnt/sd_rootfs
-sudo rm -rf /mnt/sd_rootfs
-```
-
----
-
-### 6.8. Identify Board IP Address on Network
-
-Insert the MicroSD card into the LicheeRV Nano and apply power. From the host terminal, scan the local network range to determine the board's IP address:
+Insert the MicroSD card into the LicheeRV Nano and connect power. From a host terminal, locate the board's assigned IP address:
 
 ```bash
 sudo nmap -sV -p 22 192.168.1.0/24
 ```
 
----
+### 6.4. Connect Through SSH
 
-### 6.9. Connect Through SSH & Verify Deployment
-
-Connect to the board over SSH using standard root credentials:
+From your host system, connect to the board using SSH:
 
 ```bash
 ssh root@<BOARD_IP_ADDRESS>
 ```
 
-Verify that all binaries, libraries, and model assets are correctly mounted inside `/root`:
+Upon login, verify that all staged assets are present in `/root`:
 
 ```bash
 ls -la /root
 ```
 
-Expected structure inside `/root`:
-- `http_streamer_tdl` (Executable application)
-- `yolov8n_cv181x_int8_sym.cvimodel` (YOLO model file)
-- `libraries/` (Flattened dynamic `.so` libraries directory)
+Expected contents inside `/root`:
+- `http_streamer_tdl` (Executable binary with `+x` permissions)
+- `yolov8n_cv181x_int8_sym.cvimodel` (Model file)
+- `libraries/` (Directory containing flattened dynamic link libraries)
 
 ---
 
@@ -530,10 +400,6 @@ Instead of processing frames in software via CPU routines:
 - **Video Process SubSystem (`VPSS`)** splits the capture into two hardware streams: Channel 0 scales frames to 1080p for encoding, while Channel 1 scales frames to 640x480 for NPU inference.
 - **NPU Acceleration (`TPU / CVI_TDL`)** handles INT8 YOLOv8 tensor operations on dedicated silicon, leaving the RISC-V host CPU idling.
 - **Hardware Encoder (`VENC`)** compresses raw NV21 frames directly into H.264 streams in real-time.
-
-<p align="center">
-  <img src="images/Flowchart1.jpeg" alt="Diagrama de Flujo del Sistema" width="85%">
-</p>
 
 #### 2. Zero Per-Frame Heap Allocation (Persistent Dynamic Buffering)
 Executing `malloc()` and `free()` inside 30 FPS high-frequency loops causes kernel heap fragmentation, system calls overhead, thermal throttling, and CPU spikes.

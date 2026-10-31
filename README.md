@@ -28,11 +28,11 @@
   - [3.3. Start the Docker Container](#33-start-the-docker-container)
 - [04. Base Dependencies & Software Setup](#04-base-dependencies--software-setup)
   - [4.1. Clone CVI TDL SDK](#41-clone-cvi-tdl-sdk)
-  - [4.2. Clone and Cross-Compile CivetWeb for RISC-V](#42-clone-and-cross-compile-civetweb-for-risc-v)
+  - [4.2. Clone CivetWeb Repository](#42-clone-civetweb-repository)
 - [05. System Compilation & Application Build](#05-system-compilation--application-build)
   - [5.1. Configure Buildroot Environment](#51-configure-buildroot-environment)
   - [5.2. Build Base System Image (build_all)](#52-build-base-system-image-build_all)
-  - [5.3. Compile CVI TDL Samples](#53-compile-cvi-tdl-samples)
+  - [5.3. Cross-Compile and Install CivetWeb Library](#53-cross-compile-and-install-civetweb-library)
   - [5.4. Deploy and Compile Application (http_streamer_tdl)](#54-deploy-and-compile-application-http_streamer_tdl)
   - [5.5. Container Directory Structure](#55-container-directory-structure)
 - [06. System Image Deployment](#06-system-image-deployment)
@@ -199,9 +199,9 @@ git clone https://github.com/milkv-duo/cvitek-tdl-sdk-sg200x.git --depth=1
 
 **Directory requirement:** The CVI TDL repository must be located at `/workspace/cvitek-tdl-sdk-sg200x` inside the container.
 
-### 4.2. Clone and Cross-Compile CivetWeb for RISC-V
+### 4.2. Clone CivetWeb Repository
 
-CivetWeb provides the embedded HTTP server static library (`libcivetweb.a`) required by the `http_streamer_tdl` application. Clone version `v1.15`, cross-compile it using the RISC-V toolchain, and install the library and headers directly into Buildroot's sysroot path:
+Clone version `v1.15` of CivetWeb into the workspace directory:
 
 ```bash
 cd /workspace
@@ -242,24 +242,12 @@ Once compilation successfully completes, the build system generates the final fl
 
 *(For example: `/workspace/install/soc_sg2002_licheervnano_sd/images/2026-10-31-01-07-d4003f.img` or generically referred to as `xxx.img` since the timestamp and commit hash vary with each build execution).*
 
-### 5.3. Compile CVI TDL Samples
+### 5.3. Cross-Compile and Install CivetWeb Library
 
-Once `build_all` has successfully generated the required middleware and ISP system header files, set up the cross-compiler toolchain paths and build variables, then perform a clean build of the CVI TDL SDK samples:
+To prevent compilation errors caused by missing CivetWeb headers or static libraries during application build, cross-compile CivetWeb using the RISC-V toolchain and install `libcivetweb.a` and `civetweb.h` directly into Buildroot's sysroot directory:
 
 ```bash
-# 1. Configure toolchain path and compiler environment variables
-export PATH="/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
-export CROSS_COMPILE="riscv64-unknown-linux-musl-"
-export CC="${CROSS_COMPILE}gcc"
-export CXX="${CROSS_COMPILE}g++"
-export AR="${CROSS_COMPILE}ar"
-export LD="${CROSS_COMPILE}ld"
-export STRIP="${CROSS_COMPILE}strip"
-
-# 2. Navigate to samples directory and compile cleanly
-cd /workspace/cvitek-tdl-sdk-sg200x/sample
-./compile_sample.sh clean
-./compile_sample.sh
+cd /workspace/civetweb && make WITH_CPP=0 WITH_LUA=0 WITH_IPV6=1 COMS_CFLAGS="-O2" CC=/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin/riscv64-unknown-linux-musl-gcc AR=/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin/riscv64-unknown-linux-musl-ar lib && cp libcivetweb.a /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/lib/ && cp include/civetweb.h /workspace/buildroot/output/host/riscv64-buildroot-linux-musl/sysroot/usr/include/
 ```
 
 ### 5.4. Deploy and Compile Application (http_streamer_tdl)
@@ -371,7 +359,7 @@ The current workflow covers:
 
 - Buildroot configuration and system image compilation.
 - Docker-based development environment.
-- CVI TDL SDK setup and sample compilation.
+- CVI TDL SDK setup and configuration.
 - CivetWeb integration for HTTP streaming.
 - MicroSD image deployment.
 - Wireless networking and SSH access.

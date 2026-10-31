@@ -234,13 +234,31 @@ build_all
 
 > **Note:** The full base compilation (`build_all`) is a highly resource-intensive process. Depending on host hardware capabilities (CPU core count, RAM allocation, and disk I/O speed), this step typically takes between **30 minutes to over 1 hour** to complete.
 
+Once compilation successfully completes, the build system generates the final flashable image inside the following path:
+
+```text
+/workspace/install/soc_sg2002_licheervnano_sd/images/<TIMESTAMP_AND_HASH>.img
+```
+
+*(For example: `/workspace/install/soc_sg2002_licheervnano_sd/images/2026-10-31-01-07-d4003f.img` or generically referred to as `xxx.img` since the timestamp and commit hash vary with each build execution).*
+
 ### 5.3. Compile CVI TDL Samples
 
-Once `build_all` has successfully generated the required middleware and ISP system header files, add the cross-compiler to `PATH` and compile the SDK samples:
+Once `build_all` has successfully generated the required middleware and ISP system header files, set up the cross-compiler toolchain paths and build variables, then perform a clean build of the CVI TDL SDK samples:
 
 ```bash
+# 1. Configure toolchain path and compiler environment variables
 export PATH="/workspace/host-tools/gcc/riscv64-linux-musl-x86_64/bin:$PATH"
+export CROSS_COMPILE="riscv64-unknown-linux-musl-"
+export CC="${CROSS_COMPILE}gcc"
+export CXX="${CROSS_COMPILE}g++"
+export AR="${CROSS_COMPILE}ar"
+export LD="${CROSS_COMPILE}ld"
+export STRIP="${CROSS_COMPILE}strip"
+
+# 2. Navigate to samples directory and compile cleanly
 cd /workspace/cvitek-tdl-sdk-sg200x/sample
+./compile_sample.sh clean
 ./compile_sample.sh
 ```
 
@@ -302,13 +320,13 @@ The complete project directory tree inside the container is organized as follows
 
 ### 6.1. Flash the Image to the MicroSD Card
 
-A **MicroSD card of 8 GB or larger** (Class 10 or UHS-I recommended) is required to hold the Linux system partitions and application binaries. Write the compiled image to the MicroSD card:
+A **MicroSD card of 8 GB or larger** (Class 10 or UHS-I recommended) is required to hold the Linux system partitions and application binaries. Write the compiled image generated in step 5.2 to the MicroSD card:
 
 ```bash
-sudo dd if=/path/to/image.img of=/dev/sdX bs=16M status=progress conv=fdatasync
+sudo dd if=/workspace/install/soc_sg2002_licheervnano_sd/images/<YOUR_IMAGE_NAME>.img of=/dev/sdX bs=16M status=progress conv=fdatasync
 ```
 
-Replace `/path/to/image.img` with the actual image path and `/dev/sdX` with the MicroSD card identifier.
+Replace `<YOUR_IMAGE_NAME>.img` with the actual image filename generated during `build_all` and `/dev/sdX` with the MicroSD card identifier.
 
 > **Important:** The image path and the MicroSD device path depend on where the flashing command is executed. Verify the target device before running `dd`, as selecting the wrong device can overwrite data on another disk.
 

@@ -99,28 +99,17 @@ The current work covers system configuration, image compilation, development too
 
 ### Hardware Diagrams & Visual References
 
-<p align="center">
-  <img src="images/img1.png" alt="LicheeRV Nano Pinout and Overview" width="750"/><br>
-  <em>Figure 1: LicheeRV Nano Hardware Pinout and Layout Diagram.</em>
-</p>
+| Target Board & Camera Setup | Pinout Diagram |
+| :---: | :---: |
+| ![Target Board & Camera Setup](images/img1.png) | ![Pinout Diagram](images/img2.png) |
 
-<br>
+| Board Variants & Physical Layout |
+| :---: |
+| ![Board Variants & Physical Layout](images/img3.png) |
 
-<p align="center">
-  <img src="images/img2.png" alt="LicheeRV Nano Board Dimensions" width="400"/>
-  &nbsp;&nbsp;
-  <img src="images/img3.png" alt="LicheeRV Nano Interface Diagram" width="400"/><br>
-  <em>Figure 2: Physical Board Dimensions and Hardware Interfaces.</em>
-</p>
-
-<br>
-
-<p align="center">
-  <img src="images/img4.png" alt="LicheeRV Nano WE Variant Top View" width="400"/>
-  &nbsp;&nbsp;
-  <img src="images/img5.jpeg" alt="LicheeRV Nano WE Variant Bottom View" width="400"/><br>
-  <em>Figure 3: Hardware Reference Views — LicheeRV Nano Board.</em>
-</p>
+| SG2002 Subsystem Block Diagram | SG2002 System Architecture |
+| :---: | :---: |
+| ![SG2002 Subsystem Block Diagram](images/img4.png) | ![SG2002 System Architecture](images/img5.jpeg) |
 
 ---
 
@@ -399,12 +388,11 @@ YOLO deployment, inference validation, and performance evaluation remain part of
 
 The streaming application (`http_streamer_tdl`) is engineered specifically for resource-constrained SoC environments (SOPHGO SG2002 / CV181X). High performance, stable FPS, low CPU utilization, and minimal thermal dissipation are achieved through strict C-level design pattern optimizations.
 
-<p align="center">
-  <img src="images/Flowchart1.jpeg" alt="System Software Architecture Flowchart" width="750"/><br>
-  <em>Figure 4: End-to-End Software Architecture & Real-Time Video/NPU Processing Flow.</em>
-</p>
-
 ### 8.1. Source File Responsibilities
+
+| System Architecture Flowchart |
+| :---: |
+| ![System Architecture Flowchart](images/Flowchart1.jpeg) |
 
 | Module (`.c` / `.h`) | Primary Responsibility | Optimization Focus |
 |---|---|---|

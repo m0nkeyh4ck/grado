@@ -39,6 +39,7 @@
   - [6.2. Flash Image, Stage Assets & Automated Wi-Fi Setup (flash_sd.sh)](#62-flash-image-stage-assets--automated-wi-fi-setup-flash_sdsh)
   - [6.3. Identify the Board on the Network](#63-identify-the-board-on-the-network)
   - [6.4. Connect Through SSH](#64-connect-through-ssh)
+  - [6.5. Run Streaming Application & Access Web Interface](#65-run-streaming-application--access-web-interface)
 - [07. Current Development Scope](#07-current-development-scope)
 - [08. Software Architecture & Thermal/Performance Optimization](#08-software-architecture--thermalperformance-optimization)
   - [8.1. Source File Responsibilities](#81-source-file-responsibilities)
@@ -100,16 +101,16 @@ The current work covers system configuration, image compilation, development too
 ### Hardware Diagrams & Visual References
 
 | Target Board & Camera Setup | Pinout Diagram |
-| :---: | :---: |
-| ![Target Board & Camera Setup](images/img1.png) | ![Pinout Diagram](images/img2.png) |
+|---|---|
+| <img src="images/img1.png" width="100%"> | <img src="images/img2.png" width="100%"> |
 
 | Board Variants & Physical Layout |
-| :---: |
-| ![Board Variants & Physical Layout](images/img3.png) |
+|---|
+| <img src="images/img3.png" width="100%"> |
 
 | SG2002 Subsystem Block Diagram | SG2002 System Architecture |
-| :---: | :---: |
-| ![SG2002 Subsystem Block Diagram](images/img4.png) | ![SG2002 System Architecture](images/img5.jpeg) |
+|---|---|
+| <img src="images/img4.png" width="100%"> | <img src="images/img5.jpeg" width="100%"> |
 
 ---
 
@@ -365,6 +366,24 @@ Expected contents inside `/root`:
 - `yolov8n_cv181x_int8_sym.cvimodel` (Model file)
 - `libraries/` (Directory containing flattened dynamic link libraries)
 
+### 6.5. Run Streaming Application & Access Web Interface
+
+To launch the real-time AI object detection streaming server, execute the binary on the board, passing the pre-compiled YOLOv8 `.cvimodel` file as an argument:
+
+```bash
+cd /root
+./http_streamer_tdl yolov8n_cv181x_int8_sym.cvimodel
+```
+
+Upon execution, the application initializes the camera ISP pipeline (VI), configures dual VPSS channels, starts H.264 video encoding, loads the YOLOv8 model into the TPU via CVI TDL SDK, and launches the embedded CivetWeb server on port `8080`.
+
+To view the live stream with real-time detection bounding box overlays:
+1. Open a modern web browser on any device (PC, smartphone, or tablet) connected to the same local network.
+2. Navigate to the board's web interface URL:
+   ```text
+   http://<BOARD_IP_ADDRESS>:8080/
+   ```
+
 ---
 
 ## 07. Current Development Scope
@@ -391,8 +410,8 @@ The streaming application (`http_streamer_tdl`) is engineered specifically for r
 ### 8.1. Source File Responsibilities
 
 | System Architecture Flowchart |
-| :---: |
-| ![System Architecture Flowchart](images/Flowchart1.jpeg) |
+|---|
+| <img src="images/Flowchart1.jpeg" width="100%"> |
 
 | Module (`.c` / `.h`) | Primary Responsibility | Optimization Focus |
 |---|---|---|

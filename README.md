@@ -102,7 +102,7 @@ The current work covers system configuration, image compilation, development too
 
 | Target Board & Camera Setup | Pinout Diagram |
 |---|---|
-| <img src="images/img1.png" width="100%"> | <img src="images/img2.png" width="100%"> |
+| <img src="images/img5.jpeg" width="100%"> | <img src="images/img4.png" width="100%"> |
 
 | Board Variants & Physical Layout |
 |---|
@@ -110,7 +110,7 @@ The current work covers system configuration, image compilation, development too
 
 | SG2002 Subsystem Block Diagram | SG2002 System Architecture |
 |---|---|
-| <img src="images/img4.png" width="100%"> | <img src="images/img5.jpeg" width="100%"> |
+| <img src="images/img2.png" width="100%"> | <img src="images/img1.png" width="100%"> |
 
 ---
 

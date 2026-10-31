@@ -310,13 +310,21 @@ The complete project directory tree inside the container is organized as follows
 
 ## 06. System Image Deployment
 
+> **Execution Context Note:** All steps in Section 06 are performed **on the host machine (outside the Docker container)**. Exit the container (`exit`) or open a new host terminal. Direct host OS privileges are required to access physical block devices (`/dev/sdX`), mount SD card partitions, scan local network ranges, and initiate SSH sessions.
+
 ### 6.1. Flash Image & Automated Wi-Fi Setup Script
 
-To streamline the deployment process on the **W and WE variants**, you can use the following automated Bash script on your host machine.
+Once system compilation is completed in step 5.2, the generated `.img` file is accessible on the host machine at:
 
-This script unmounts existing target card partitions, writes the compiled system image using `dd`, mounts the system root partition (`rootfs`), writes the Wi-Fi credentials to `/etc/wpa_supplicant/wpa_supplicant.conf`, and configures clean automatic network start commands inside `/etc/init.d/rcS` to avoid socket conflict issues upon boot.
+```text
+/root/LicheeRV-Nano-Build/install/soc_sg2002_licheervnano_sd/images/<YOUR_IMAGE_NAME>.img
+```
 
-Save the code as `flash_sd.sh`, replace the image filename and Wi-Fi placeholders with your generated image and network credentials, grant execution permissions (`chmod +x flash_sd.sh`), and run it:
+To flash the MicroSD card and pre-configure Wi-Fi for **W and WE variants**, run the following automated Bash script on your **host machine**.
+
+The script unmounts existing target device partitions, writes the compiled system image using `dd`, mounts the system root partition (`rootfs`), writes the Wi-Fi configuration to `/etc/wpa_supplicant/wpa_supplicant.conf`, and adds clean network auto-startup commands to `/etc/init.d/rcS` to avoid socket conflict errors on boot.
+
+Create the file `flash_sd.sh` on the host machine, grant execution permissions (`chmod +x flash_sd.sh`), and run it:
 
 ```bash
 #!/bin/bash
@@ -367,11 +375,14 @@ sudo rm -rf "$MOUNT_DIR"
 echo "=== DONE! MicroSD image flashed and auto Wi-Fi startup configured. ==="
 ```
 
-> **Important:** Ensure you replace `YOUR_IMAGE_NAME.img` with the actual filename generated during compilation (e.g., `2026-10-31-01-07-d4003f.img`), and replace `YOUR_WIFI_SSID` / `YOUR_WIFI_PASSWORD` with your target Wi-Fi network credentials before executing the script. Also verify that `DEVICE` matches your MicroSD card identifier on the host system.
+> **Important Notes:**
+> - Set `IMG` to the path or filename of your generated image (e.g., `IMG="/root/LicheeRV-Nano-Build/install/soc_sg2002_licheervnano_sd/images/2026-10-31-01-07-d4003f.img"`).
+> - Replace `YOUR_WIFI_SSID` and `YOUR_WIFI_PASSWORD` with your wireless network credentials.
+> - Double-check that `DEVICE` matches your MicroSD card device node on the host (`/dev/sdX` or `/dev/mmcblkX`) to avoid accidentally overwriting host system drives.
 
 ### 6.2. Identify the Board on the Network
 
-After inserting the MicroSD card and powering on the board, identify its IP address on the local network using `nmap`:
+Insert the MicroSD card into the LicheeRV Nano and connect power. From a host terminal, locate the board's assigned IP address:
 
 ```bash
 sudo nmap -sV -p 22 192.168.1.0/24
@@ -379,7 +390,7 @@ sudo nmap -sV -p 22 192.168.1.0/24
 
 ### 6.3. Connect Through SSH
 
-Connect to the board using the default root account:
+From your host system, connect to the board using SSH:
 
 ```bash
 ssh root@<BOARD_IP_ADDRESS>
